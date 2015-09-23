@@ -236,6 +236,33 @@ coreos:
 
         [Install]
         WantedBy=user-config.target
+{% if enable_fleetui %}
+    - name: fleetui.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=FleetUI
+        After=container_exporter.service
+        Requires=container_exporter.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        ExecStartPre=-/usr/bin/etcdctl set /crisidev/fleetui.crisidev.org '{"https":[3000], "htaccess":"true"}'
+        ExecStartPre=-/usr/bin/docker kill fleetui.crisidev.org
+        ExecStartPre=-/usr/bin/docker rm fleetui.crisidev.org
+        ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
+        ExecStart=/usr/bin/docker run --rm --name fleetui.crisidev.org --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
+          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.crisidev.org:4001 \
+          purpleworks/fleet-ui
+        ExecStop=-/usr/bin/etcdctl rm /crisidev/fleetui.crisidev.org
+        ExecStop=/usr/bin/docker stop fleetui.crisidev.org
+
+        [Install]
+        WantedBy=user-config.target
+{% endif %}
     - name: install-toolbox.service
       command: start
       enable: true
@@ -255,33 +282,6 @@ coreos:
         ExecStart=/bin/bash -c "cd /home/core && cp /usr/share/skel/.bashrc .bashrc.new && mv .bashrc.new .bashrc"
         ExecStart=/bin/bash -c "echo source /var/bash-completion/bash_completion >> /home/core/.bashrc"
         ExecStartPost=/usr/bin/chown -R core:core /home/core
-{% if enable_fleetui %}
-    - name: fleetui.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=FleetUI
-        After=registrator.service
-        Requires=registrator.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/etcdctl set /crisidev/fleetui.crisidev.org '{"https":[3000], "htaccess":"true"}'
-        ExecStartPre=-/usr/bin/docker kill fleetui.crisidev.org
-        ExecStartPre=-/usr/bin/docker rm fleetui.crisidev.org
-        ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
-        ExecStart=/usr/bin/docker run --rm --name fleetui.crisidev.org --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
-          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.crisidev.org:4001 \
-          purpleworks/fleet-ui
-        ExecStop=-/usr/bin/etcdctl rm /crisidev/fleetui.crisidev.org
-        ExecStop=/usr/bin/docker stop fleetui.crisidev.org
-
-        [Install]
-        WantedBy=user-config.target
-{% endif %}
   update:
     reboot-strategy: 'off'
 write_files:
