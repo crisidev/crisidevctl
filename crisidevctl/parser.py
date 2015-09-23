@@ -15,7 +15,6 @@ from .modules.proxy import CrisidevClusterProxy
 class CrisidevCtl(object):
 
     def __init__(self):
-        global cfg
         self.log = logging.getLogger(__name__)
         parser = argparse.ArgumentParser(
             description="Crisidev Cloud Control",
