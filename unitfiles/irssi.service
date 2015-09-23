@@ -1,0 +1,24 @@
+[Unit]
+Description=Irssi and stuff
+After=docker.service
+After=registrator.service
+Requires=registrator.service
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/etcdctl set /crisidev/irssi.crisidev.org '{"tcp":[22]}'
+ExecStartPre=-/usr/bin/docker kill irssi.crisidev.org
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/irssi
+ExecStart=/usr/bin/docker run -t --rm --name irssi.crisidev.org --hostname irssi \
+  --expose 22 -e SERVICE_ID=irssi -e SERVICE_NAME=irssi -v /crisidev-share/irssi/.irssi:/home/irssi/.irssi \
+  -e SSH_PUB_KEY='ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAtWimS6k0eObH0WmsHrIbrZ+RyNuMHcgHRfZAMSJRI++YeUScwIDhXX/ru6NlNyPQIKUsGeHgadhJNA6UHu+4Ck24ISCODcPQrBAi6r65AmL0iEIOnGdcs3IzVG6ski7WDdjCzCPY1lcWBxyWSpUcNmmx55+vllEMPb5a/O2RpQQ3VLfl/WPuCxQYmrLj7vnWS4Vcsia8QwpPxKPsW6HWAbNd7WuewthkxB+/T8gc1D/HwSubTeW49e6fM7dtNNtNAcUcv20QFvwXB8P4lNAZjnBFf5US4sJL53UPsv4vZ74+mTm+6WO1iGrcuRnmyOuTZYa/gTt/tYp6grGUJgsYIw== bigo@discordia' \
+  hub.crisidev.org:5000/crisidev/irssi
+ExecStop=-/usr/bin/etcdctl rm /crisidev/irssi.crisidev.org
+ExecStop=/usr/bin/docker stop irssi.crisidev.org
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata="type=node"

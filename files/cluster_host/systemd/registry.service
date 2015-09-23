@@ -1,0 +1,10 @@
+[Unit]
+Description=Docker registry
+
+[Service]
+ExecStart=/usr/local/bin/registry /etc/registry/config.yml
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

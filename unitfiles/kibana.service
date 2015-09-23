@@ -1,0 +1,23 @@
+[Unit]
+Description=Kibana
+After=docker.service
+After=registrator.service
+Requires=registrator.service
+
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/etcdctl set /crisidev/kibana.crisidev.org '{"https":[5601]}'
+ExecStartPre=-/usr/bin/docker kill kibana
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/kibana
+ExecStart=/bin/bash -c "/usr/bin/docker start -a kibana || /usr/bin/docker run --name kibana \
+  --expose 5601 -e SERVICE_ID=kibana -e SERVICE_NAME=kibana \
+  hub.crisidev.org:5000/crisidev/kibana http://logbox.crisidev.org:9200"
+ExecStop=-/usr/bin/etcdctl rm /crisidev/kibana.crisidev.org
+ExecStop=/usr/bin/docker stop kibana
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]

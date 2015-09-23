@@ -1,0 +1,23 @@
+[Unit]
+Description=Sickbeard
+After=docker.service
+After=registrator.service
+Requires=registrator.service
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/etcdctl set /crisidev/tv.crisidev.org '{"https":[9092],"htaccess":"false"}'
+ExecStartPre=-/usr/bin/docker kill tv.crisidev.org
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/sickbeard
+ExecStart=/usr/bin/docker run --rm --name tv.crisidev.org \
+  --expose 9092 -e SERVICE_ID=tv -e SERVICE_NAME=tv -v /unsafe:/unsafe -v /crisidev-share:/crisidev-share \
+  hub.crisidev.org:5000/crisidev/sickbeard
+ExecStop=-/usr/bin/etcdctl rm /crisidev/tv.crisidev.org
+ExecStop=/usr/bin/docker stop tv.crisidev.org
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata="type=snatch"

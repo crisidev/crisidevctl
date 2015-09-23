@@ -1,0 +1,11 @@
+[Unit]
+Description=Crisidev Cloud Updater
+
+[Service]
+ExecStart=/usr/local/bin/etcdctl --endpoint http://etcd.crisidev.org:4001 exec-watch --recursive /crisidev -- \
+  sh -c 'sleep 30; /usr/local/bin/crisidevctl nat; /usr/local/bin/crisidevctl proxy'
+Restart=always
+RestartSec=60s
+
+[Install]
+WantedBy=multi-user.target

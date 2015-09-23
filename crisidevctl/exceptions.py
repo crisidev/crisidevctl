@@ -1,0 +1,2 @@
+class CrisidevException(Exception):
+    pass

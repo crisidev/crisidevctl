@@ -1,0 +1,130 @@
+#! /bin/bash
+# Crisidev Cloud Firewall
+
+echo "Setting up firewall rules..."
+#-------------------------------------------------------------------------------
+# Script variables
+#-------------------------------------------------------------------------------
+IF_WAN=eth0
+IF_BR=br0
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Adjust /proc
+#-------------------------------------------------------------------------------
+echo -ne "\t\tAdjusting /proc..."
+
+echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+echo 1 > /proc/sys/net/ipv4/conf/all/secure_redirects
+echo 1 > /proc/sys/net/ipv4/conf/all/send_redirects
+#echo 0 > /proc/sys/net/ipv4/tcp_syncookies
+echo 1 > /proc/sys/net/ipv4/conf/all/accept_source_route
+echo 1 > /proc/sys/net/ipv4/conf/all/forwarding
+echo 0 > /proc/sys/net/ipv4/conf/all/log_martians
+echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Flush existing settings
+#-------------------------------------------------------------------------------
+echo -ne "\t\tFlushing existing settings..."
+
+iptables -F INPUT
+iptables -F OUTPUT
+iptables -F FORWARD
+iptables -t nat -F
+iptables -t mangle -F
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Table policies
+#-------------------------------------------------------------------------------
+echo -ne "\t\tSetting up tables policies..."
+
+iptables -P INPUT DROP
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Loopback traffic
+#-------------------------------------------------------------------------------
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Icmp settings
+#-------------------------------------------------------------------------------
+echo -ne "\t\tSetting up icmp rules..."
+
+# to fw
+iptables -A INPUT -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -m length --length 128:65535 -j DROP
+iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
+
+# from fw
+iptables -A OUTPUT -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-request -m length --length 128:65535 -j DROP
+iptables -A OUTPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
+
+# trough fw
+iptables -A FORWARD -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i $IF_WAN -p icmp --icmp-type destination-unreachable -m limit --limit 1/s -j ACCEPT
+iptables -A FORWARD -i $IF_WAN -p icmp --icmp-type redirect -m limit --limit 1/s -j ACCEPT
+iptables -A FORWARD -i $IF_WAN -p icmp --icmp-type time-exceeded -m limit --limit 1/s -j ACCEPT
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Filter settings
+#-------------------------------------------------------------------------------
+echo -ne "\t\tSetting up FILTER rules..."
+
+# from WAN to FW
+iptables -A INPUT -i $IF_BR -j ACCEPT
+iptables -A INPUT -i $IF_WAN -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i $IF_WAN -p tcp --dport 22 -j ACCEPT                           # ssh
+iptables -A INPUT -i $IF_WAN -p tcp --dport 80 -j ACCEPT                           # http
+iptables -A INPUT -i $IF_WAN -p tcp --dport 443 -j ACCEPT                          # https
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# NAT settings
+#-------------------------------------------------------------------------------
+echo -ne "\t\tSetting up NAT rules..."
+
+iptables -t nat -A POSTROUTING -j MASQUERADE
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# TOS settings
+#-------------------------------------------------------------------------------
+echo -ne "\t\tSetting up TOS rules..."
+
+# tcp
+iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 21,22,80 -j TOS --set-tos 0x10
+iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 20,25,143 -j TOS --set-tos 0x08
+iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 53,110 -j TOS --set-tos 0x04
+
+# udp
+iptables -t mangle -A PREROUTING -p udp -m udp -m multiport --dports 53,110 -j TOS --set-tos 0x04
+iptables -t mangle -A PREROUTING -p udp -m udp -m multiport --dports 143 -j TOS --set-tos 0x08
+
+echo "done."
+#-------------------------------------------------------------------------------
+
+echo "The firewall is up."
