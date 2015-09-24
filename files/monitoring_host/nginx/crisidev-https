@@ -1,0 +1,55 @@
+upstream prometheus {
+    server 127.0.0.1:9090;
+}
+
+server {
+    listen 443 ssl;
+    server_name prometheus.crisidev.org;
+
+    ssl on;
+    ssl_certificate /etc/nginx/ssl/crisidev.crt;
+    ssl_certificate_key /etc/nginx/ssl/crisidev.key;
+    ssl_session_cache shared:SSL:10m;
+
+    proxy_set_header Host             $http_host;   # required for docker client's sake
+    proxy_set_header X-Real-IP        $remote_addr; # pass on real client's IP
+    client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
+    chunked_transfer_encoding on;
+
+    access_log /var/log/nginx/prometheus.crisidev.org-ssl-access.log;
+    error_log /var/log/nginx/prometheus.crisidev.org-ssl-error.log;
+
+    location / {
+        auth_basic            "Alt!";
+        auth_basic_user_file  /etc/nginx/ssl/htpasswd;
+        proxy_pass http://prometheus
+        proxy_http_version 1.1;
+    }
+}
+
+upstream grafana {
+    server 127.0.0.1:3000;
+}
+
+server {
+    listen 443 ssl;
+    server_name metrics.crisidev.org;
+
+    ssl on;
+    ssl_certificate /etc/nginx/ssl/crisidev.crt;
+    ssl_certificate_key /etc/nginx/ssl/crisidev.key;
+    ssl_session_cache shared:SSL:10m;
+
+    proxy_set_header Host             $http_host;   # required for docker client's sake
+    proxy_set_header X-Real-IP        $remote_addr; # pass on real client's IP
+    client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
+    chunked_transfer_encoding on;
+
+    access_log /var/log/nginx/metrics.crisidev.org-ssl-access.log;
+    error_log /var/log/nginx/metrics.crisidev.org-ssl-error.log;
+
+    location / {
+        proxy_pass http://metrics
+        proxy_http_version 1.1;
+    }
+}

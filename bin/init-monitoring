@@ -14,29 +14,23 @@ apt-get update && apt-get -y dist-upgrade && apt-get install locales
 echo -e "en_IE.UTF-8 UTF-8\nen_US.UTF-8 UTF-8" |tee /etc/locale.gen && locale-gen
 
 # install stuff
-apt-get -y install htop bmon iotop dstat git vim-nox most bash-completion zsh docker.io bridge-utils ifupdown tinc dnsutils
+apt-get -y install htop bmon iotop dstat git vim-nox most bash-completion zsh docker.io bridge-utils ifupdown tinc dnsutils nginx
 /etc/init.d/tinc stop
 /etc/init.d/docker stop
+/etc/init.d/nginx stop
 
 # modify docker opts
 echo 'DOCKER_OPTS="-s overlay --insecure-registry=192.168.0.0/24 --insecure-registry=10.0.0.0/16 --insecure-registry hub.crisidev.org:5000 --dns 192.168.0.1 --dns 8.8.8.8"' |tee /etc/default/docker
-
-# add and initialise bridge
-if ! grep -q br0 /etc/network/interfaces; then
-echo -e "
-auto br0
-iface br0 inet static
-  pre-up modprobe tun
-  bridge_ports none
-  bridge_fd 0
-  address 192.168.0.254
-  broadcast 192.168.0.255
-  netmask 255.255.255.0" | tee -a /etc/network/interfaces
-fi
-ifup br0
+/etc/init.d/docker start
 
 # install tinc config
 wget http://private-repo.crisidev.org/hubble/crisidev-vpn.tbz2 -O /etc/tinc/vpn.tbz2
-cd /etc/tinc && tar xjvf vpn.tbz2
+cd /etc/tinc && tar xjvf vpn.tbz2 && rm ssl.tbz2
 echo "crisidev-vpn" >> /etc/tinc/nets.boot
 systemctl enable tinc
+/etc/init.d/tinc start
+
+# install nginx configs
+wget http://private-repo.crisidev.org/hubble/nginx-ssl.tbz2 -O /etc/nginx/ssl.tbz2
+cd /etc/nginx && tar xjvf ssl.tbz2 && rm ssl.tbz2
+rm -rf /etc/nginx/sites-enabled/default
