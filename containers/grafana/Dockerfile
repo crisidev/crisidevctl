@@ -14,7 +14,6 @@ RUN apt-get update && apt-get -y install libfontconfig adduser openssl ca-certif
 
 RUN mkdir -p /var/lib/grafana
 ADD grafana.ini /etc/grafana/
-ADD grafana.db /var/lib/grafana/
 ADD prometheus /usr/share/grafana/public/app/plugins/datasource/prometheus
 
 WORKDIR /usr/share/grafana
