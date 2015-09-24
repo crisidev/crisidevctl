@@ -22,7 +22,7 @@ class CrisidevClusterNat(object):
         self.udp = {}
         self.used_ports = []
         self.etcd_dir = args.etcd_dir or cfg.etcd_dir_crisidev
-        self.bridge = args.bridge or cfg.vbox_bridge
+        self.bridge = args.bridge or cfg.kvm_bridge
         log.info("loading new NAT configuration")
 
     def __call__(self):

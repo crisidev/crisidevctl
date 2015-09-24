@@ -12,7 +12,7 @@ class CrisidevClusterRoute(object):
     def __init__(self, args):
         self.keys = None
         self.remove = args.remove
-        self.bridge = args.bridge or cfg.vbox_bridge
+        self.bridge = args.bridge or cfg.kvm_bridge
 
     def __call__(self):
         self.etcd = CrisidevEtcd()

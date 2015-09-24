@@ -7,13 +7,13 @@ Requires=registrator.service
 [Service]
 Restart=on-failure
 TimeoutStartSec=0
-ExecStartPre=-/usr/bin/etcdctl set /crisidev/tpb.crisidev.org '{"https":[8112]}'
 ExecStartPre=-/usr/bin/docker kill tpb.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/deluge
 ExecStart=/usr/bin/docker run --rm --name tpb.crisidev.org \
   --expose 8112 -e SERVICE_ID=tpb -e SERVICE_NAME=tpb \
   -v /unsafe:/unsafe -v /crisidev-share:/crisidev-share \
   hub.crisidev.org:5000/crisidev/deluge
+ExecStartPost=-/usr/bin/etcdctl set /crisidev/tpb.crisidev.org '{"https":[8112]}'
 ExecStop=-/usr/bin/etcdctl rm /crisidev/tpb.crisidev.org
 ExecStop=/usr/bin/docker stop tpb.crisidev.org
 

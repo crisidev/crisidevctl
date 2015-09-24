@@ -7,12 +7,12 @@ Requires=registrator.service
 [Service]
 Restart=on-failure
 TimeoutStartSec=0
-ExecStartPre=-/usr/bin/etcdctl set /crisidev/private/skype.crisidev.org '{"tcp":[2727]}'
 ExecStartPre=-/usr/bin/docker kill skype.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/skype.crisidev.org
 ExecStart=/usr/bin/docker run -t --rm --name skype.crisidev.org \
   --expose 2727 -e SERVICE_ID=skype -e SERVICE_NAME=skype \
   hub.crisidev.org:5000/crisidev/skype
+ExecStartPost=-/usr/bin/etcdctl set /crisidev/private/skype.crisidev.org '{"tcp":[2727]}'
 ExecStop=-/usr/bin/etcdctl rm /crisidev/private/skype.crisidev.org
 ExecStop=/usr/bin/docker stop skype.crisidev.org
 

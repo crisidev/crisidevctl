@@ -18,6 +18,7 @@ coreos:
   fleet:
     public-ip: {{ address }}
     etcd_servers: "http://{{ address }}:4001"
+    etcd-request-timeout: 15
     metadata: "host={{ hostname }},hypervisor=virtualbox,type={{ flavour }}"
   units:
     - name: etcd2.service
@@ -29,7 +30,6 @@ coreos:
         content: |
           [Service]
           ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"10.0.0.0/16","SubnetLen":24,"SubnetMin":"10.0.1.0","SubnetMax":"10.0.3.0"}'
-          ExecStartPre=/usr/bin/ip link set dev enp0s3 mtu 9100
     - name: fleet.service
       command: start
     - name: docker-tcp.socket
@@ -59,64 +59,62 @@ coreos:
 
         [Install]
         WantedBy=sockets.target
-    - name: 00-enp0s3.network
+    - name: 00-eth0.network
       runtime: true
       content: |
         [Match]
-        Name=enp0s3
+        Name=eth0
 
         [Network]
         DNS=127.0.0.1
         DNS=8.8.8.8
         Address={{ address }}/24
         Gateway=192.168.0.1
-    - name: rpc-statd.service
-      command: start
-      enable: true
     - name: mkdir-crisidev-share.service
       command: start
       content: |
         [Unit]
-        Description=Create the mount directory /crisidev-share
+        Description=Create the mount directory /crisidev-share and /unsafe
 
         [Service]
         Type=oneshot
         RemainAfterExit=yes
         ExecStart=/usr/bin/mkdir -p /crisidev-share
         ExecStart=/usr/bin/mkdir -p /unsafe
+        ExecStart=/usr/bin/chown core:core /crisidev-share
+        ExecStart=/usr/bin/chown core:core /unsafe
     - name: crisidev\x2dshare.mount
       command: start
       content: |
         [Unit]
-        Description=Mount NFS share onto /crisidev-share
+        Description=Mount crisidev-share onto /crisidev-share
         Requires=mkdir-crisidev-share.service
         After=mkdir-crisidev-share.service
 
         [Mount]
-        What=shuttle.crisidev.org:/crisidev-share
+        What=crisidev-share
         Where=/crisidev-share
-        Type=nfs
-        Options=rw,async,nolock,rsize=49152,wsize=49152,noatime,nodiratime,intr
+        Type=9p
+        Options=trans=virtio
 
         [Install]
         WantedBy=user-config.target
-{% if flavour == "snatch" %}
     - name: unsafe.mount
       command: start
       content: |
         [Unit]
-        Description=Mount sdb1 onto /unsafe
+        Description=Mount unsafe onto /unsafe
         Requires=mkdir-crisidev-share.service
         After=mkdir-crisidev-share.service
 
         [Mount]
-        What=/dev/sdb1
+        What=unsafe
         Where=/unsafe
-        Type=ext4
+        Type=9p
+        Options=trans=virtio
 
         [Install]
         WantedBy=user-config.target
-{% endif %}
     - name: cluster.service
       command: start
       enable: true
@@ -141,9 +139,6 @@ coreos:
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/etcd/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=/usr/bin/etcdctl set /skydns/config '{"domain":"crisidev.org","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
-        ExecStart=-/usr/bin/mkdir -p /run/crisidev
-        ExecStart=-/usr/bin/chown core:core /run/crisidev
-        ExecStart=-/usr/bin/chown core:core /crisidev-share
         ExecStart=/usr/bin/systemctl stop update-engine.service
 
         [Install]
@@ -250,13 +245,14 @@ coreos:
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/etcdctl set /crisidev/fleetui.crisidev.org '{"https":[3000], "htaccess":"true"}'
         ExecStartPre=-/usr/bin/docker kill fleetui.crisidev.org
         ExecStartPre=-/usr/bin/docker rm fleetui.crisidev.org
         ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
+        ExecStartPre=-/usr/bin/chown -R core:core /home/core
         ExecStart=/usr/bin/docker run --rm --name fleetui.crisidev.org --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
           -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.crisidev.org:4001 \
           purpleworks/fleet-ui
+        ExecStartPost=-/usr/bin/etcdctl set /crisidev/fleetui.crisidev.org '{"https":[3000], "htaccess":"true"}'
         ExecStop=-/usr/bin/etcdctl rm /crisidev/fleetui.crisidev.org
         ExecStop=/usr/bin/docker stop fleetui.crisidev.org
 
@@ -307,16 +303,3 @@ write_files:
   content: |
     TOOLBOX_DOCKER_IMAGE=debian
     TOOLBOX_DOCKER_TAG=jessie
-- path: /etc/idmapd.conf
-  content: |
-    [General]
-
-    Verbosity = 0
-    Pipefs-Directory = /run/rpc_pipefs
-    # set your own domain here, if id differs from FQDN minus hostname
-    Domain = crisidev.org
-
-    [Mapping]
-
-    Nobody-User = nobody
-    Nobody-Group = nogroup

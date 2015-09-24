@@ -7,6 +7,7 @@ echo "Setting up firewall rules..."
 #-------------------------------------------------------------------------------
 IF_WAN=eth0
 IF_BR={{ bridge }}
+IF_VPN=crisidev-vpn
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -92,10 +93,12 @@ echo -ne "\t\tSetting up FILTER rules..."
 
 # from WAN to FW
 iptables -A INPUT -i $IF_BR -j ACCEPT
+iptables -A INPUT -i $IF_VPN -j ACCEPT
 iptables -A INPUT -i $IF_WAN -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i $IF_WAN -p tcp --dport 22 -j ACCEPT                           # ssh
 iptables -A INPUT -i $IF_WAN -p tcp --dport 80 -j ACCEPT                           # http
 iptables -A INPUT -i $IF_WAN -p tcp --dport 443 -j ACCEPT                          # https
+iptables -A INPUT -i $IF_WAN -p tcp --dport 655 -j ACCEPT                          # tinc
 
 echo "done."
 #-------------------------------------------------------------------------------
@@ -118,23 +121,6 @@ RETVAL=$(expr ${RETVAL} + $?)
 iptables -t nat -A PREROUTING -i eth0 -p udp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
 RETVAL=$(expr ${RETVAL} + $?)
 {% endfor %}{% endfor %}
-
-echo "done."
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-# TOS settings
-#-------------------------------------------------------------------------------
-echo -ne "\t\tSetting up TOS rules..."
-
-# tcp
-iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 21,22,80 -j TOS --set-tos 0x10
-iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 20,25,143 -j TOS --set-tos 0x08
-iptables -t mangle -A PREROUTING -p tcp -m tcp -m multiport --dports 53,110 -j TOS --set-tos 0x04
-
-# udp
-iptables -t mangle -A PREROUTING -p udp -m udp -m multiport --dports 53,110 -j TOS --set-tos 0x04
-iptables -t mangle -A PREROUTING -p udp -m udp -m multiport --dports 143 -j TOS --set-tos 0x08
 
 echo "done."
 #-------------------------------------------------------------------------------

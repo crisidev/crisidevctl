@@ -74,12 +74,12 @@ class CrisidevClusterInit(object):
             fd.write(self.etcd_key)
 
     def _create_vbox_disk(self, name):
-        disk_path = os.path.join(cfg.vbox_disk_path, "{}.vdi".format(name))
+        disk_path = os.path.join(cfg.kvm_disk_path, "{}.raw".format(name))
         if not os.path.exists(disk_path):
             if self.disk_size:
                 log.info("disk {} not found. creating a new one, size {} Gb".format(disk_path, self.disk_size))
-                runcmd("sudo -u {} vboxmanage createhd --filename {} --format VDI --variant Standard --size {}".format(
-                    cfg.vbox_user, disk_path, self.disk_size * 1000))
+                runcmd("sudo -u {} qemu-img create -f raw -o size={}G {}".format(
+                    cfg.kvm_user, self.disk_size, disk_path))
             else:
                 raise CrisidevException("--disk_size option required for new disks")
         else:
