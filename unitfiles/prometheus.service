@@ -1,0 +1,16 @@
+[Unit]
+Description=Prometheus
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill prometheus.crisidev.org
+ExecStartPre=-/usr/bin/docker rm prometheus.crisidev.org
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/prometheus:armhf
+ExecStart=/usr/bin/docker run --rm --name prometheus.crisidev.org -p 127.0.0.1:9090:9090 \
+  -v /crisidev-share/prometheus:/var/lib/prometheus \
+  hub.crisidev.org:5000/crisidev/prometheus:armhf
+ExecStop=/usr/bin/docker stop prometheus.crisidev.org
+
+[Install]
+WantedBy=multi-user.target
