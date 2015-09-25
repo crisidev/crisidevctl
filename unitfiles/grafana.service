@@ -8,7 +8,7 @@ ExecStartPre=-/usr/bin/docker kill grafana.crisidev.org
 ExecStartPre=-/usr/bin/docker rm grafana.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/grafana:armhf
 ExecStart=/usr/bin/docker run --rm --name grafana.crisidev.org -p 127.0.0.1:3000:3000 \
-  -v /crisidev-share/grafana:/var/lib/grafana \
+  -v /crisidev-share/grafana:/var/lib/grafana --link prometheus.crisidev.org:prometheus \
   hub.crisidev.org:5000/crisidev/grafana:armhf
 ExecStop=/usr/bin/docker stop grafana.crisidev.org
 

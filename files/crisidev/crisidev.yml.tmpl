@@ -131,7 +131,6 @@ coreos:
         ExecStart=-/usr/bin/etcdctl mkdir /crisidev/private
         ExecStart=/usr/bin/etcdctl set /crisidev/{{ hostname }} '{"tcp":[22]}'
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/shuttle '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/hubble '{"host":"192.168.0.254"}'
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/apt '{"host":"192.168.0.1"}'
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/hub '{"host":"192.168.0.1"}'
         ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/repo '{"host":"192.168.0.1"}'

@@ -31,4 +31,4 @@ RUN apt-get update && \
 
 EXPOSE 3000
 
-ENTRYPOINT ["/usr/sbin/grafana-server", "--config", "/etc/grafana/grafana.ini"]
+CMD ["/usr/sbin/grafana-server", "-config", "/etc/grafana/grafana.ini"]

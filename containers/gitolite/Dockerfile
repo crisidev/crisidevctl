@@ -44,6 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /usr/share/doc/*
 
-#ENTRYPOINT ["/init", "/usr/sbin/sshd", "-D"]
-
 EXPOSE 22
+
+CMD ["/init", "/usr/sbin/sshd", "-D"]
+
