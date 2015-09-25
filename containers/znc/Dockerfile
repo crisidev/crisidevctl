@@ -1,28 +1,20 @@
-FROM debian:jessie
+FROM debian:stretch
 
 MAINTAINER Bigo <bigo@crisidev.org>
 
 RUN echo 'APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/99local
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/99local
 RUN apt-get update && apt-get -y install wget localepurge locales
-RUN echo "deb http://apt.crisidev.org jessie main" >> /etc/apt/sources.list
-RUN wget -O - http://apt.crisidev.org/bigo@crisidev.org.gpg.key |apt-key add -
 RUN echo "en_IE.UTF-8 UTF-8\nen_US.UTF-8 UTF-8" > /etc/locale.gen
 RUN locale-gen
 RUN dpkg-reconfigure localepurge
 
 # Update and install
-RUN apt-get update && apt-get -y install tmux irssi irssi-plugin-otr ssh vim-nox \
-  tmux ca-certificates libtime-duration-perl libtimedate-perl
-
-RUN mkdir /var/run/sshd
+RUN apt-get -y install ca-certificates znc
 
 # Add irssi user, create key and setup authorisation
 RUN groupadd -g 500 irssi
 RUN useradd --shell /bin/bash --home-dir /home/irssi -u 500 -g 500 -m irssi
-ADD irssi /home/irssi/irssi
-ADD tmux.conf /home/irssi/.tmux.conf
-RUN chmod +x /home/irssi/irssi
 RUN chown -R irssi:irssi /home/irssi
 
 # init
@@ -41,8 +33,7 @@ RUN apt-get update && \
     rm -rf /usr/share/doc/*
 
 # SSH port
-EXPOSE 22
-EXPOSE 7000
+EXPOSE 7002
 
 # Start ssh
-CMD ["/run.sh", "/usr/sbin/sshd", "-D"]
+CMD ["/run.sh"]

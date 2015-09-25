@@ -208,12 +208,12 @@ coreos:
 
         [Install]
         WantedBy=user-config.target
-    - name: container_exporter.service
+    - name: cadvisor.service
       command: start
       enable: true
       content: |
         [Unit]
-        Description=Prometheus Container Exporter
+        Description=Cadvisor
         After=registrator.service
         Requires=registrator.service
 
@@ -221,13 +221,17 @@ coreos:
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill container_exporter
-        ExecStartPre=-/usr/bin/docker rm container_exporter
-        ExecStartPre=-/usr/bin/docker pull prom/container-exporter
-        ExecStart=/usr/bin/docker run --rm --name container_exporter -p 9104:9104 \
-          -v /sys/fs/cgroup:/cgroup -v /var/run/docker.sock:/var/run/docker.sock \
-          prom/container-exporter
-        ExecStop=/usr/bin/docker stop container_exporter
+        EnvironmentFile=/etc/environment
+        ExecStartPre=-/usr/bin/docker kill cadvisor
+        ExecStartPre=-/usr/bin/docker rm cadvisor
+        ExecStartPre=-/usr/bin/docker pull google/cadvisor
+        ExecStart=/usr/bin/docker run --rm --name cadvisor -p 8080:8080 \
+           -e SERVICE_ID=cadvisor-${HNAME} -e SERVICE_NAME=cadvisor \
+           --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw \
+           --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
+           google/cadvisor
+        ExecStartPost=-/usr/bin/etcdctl set /crisidev/private/cadvisor-${HNAME}.crisidev.org '{"http":[8080]}'
+        ExecStop=/usr/bin/docker stop cadvisor
 
         [Install]
         WantedBy=user-config.target
@@ -238,8 +242,8 @@ coreos:
       content: |
         [Unit]
         Description=FleetUI
-        After=container_exporter.service
-        Requires=container_exporter.service
+        After=cadvisor.service
+        Requires=cadvisor.service
 
         [Service]
         Restart=always
