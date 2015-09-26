@@ -51,7 +51,7 @@ class CrisidevClusterNat(object):
         bisect.insort(self.used_ports, port)
 
     def _get_starting_port(self, port):
-        return cfg.nat_port_mapping.get(port) or port
+        return cfg.nat_port_mapping.get(str(port)) or port
 
     def _setup_port_mapping(self, hostname, ports):
         mapping = []

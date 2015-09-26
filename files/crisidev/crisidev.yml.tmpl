@@ -95,7 +95,7 @@ coreos:
         What=crisidev-share
         Where=/crisidev-share
         Type=9p
-        Options=trans=virtio
+        Options=trans=virtio,cache=mmap
 
         [Install]
         WantedBy=user-config.target
@@ -111,7 +111,7 @@ coreos:
         What=unsafe
         Where=/unsafe
         Type=9p
-        Options=trans=virtio
+        Options=trans=virtio,cache=mmap
 
         [Install]
         WantedBy=user-config.target
@@ -202,7 +202,7 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill node_exporter
         ExecStartPre=-/usr/bin/docker rm node_exporter
         ExecStartPre=-/usr/bin/docker pull prom/node-exporter
-        ExecStart=/usr/bin/docker run --rm --name exporter --net="host" prom/node-exporter
+        ExecStart=/usr/bin/docker run --rm --name node_exporter --net="host" prom/node-exporter
         ExecStop=/usr/bin/docker stop node_exporter
 
         [Install]

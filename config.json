@@ -33,7 +33,7 @@
     "kvm_disk_path": "/crisidev-share/kvm/disks",
     "etcd_port": 4001,
     "firewall_template": "/etc/crisidev/firewall.tmpl",
-    "kvm_user": "bigo",
+    "vbox_user": "bigo",
     "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
     "firewall_file_safe": "/etc/crisidev/firewall.safe",
     "etcd_dir_crisidev": "/crisidev",

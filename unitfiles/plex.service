@@ -10,7 +10,8 @@ TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill plex.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/plex
 ExecStart=/usr/bin/docker run --rm --name plex.crisidev.org \
-  --expose 32400 -e SERVICE_ID=plex -e SERVICE_NAME=plex -v /unsafe:/unsafe \
+  --expose 32400 -e SERVICE_ID=plex -e SERVICE_NAME=plex \
+  -v /crisidev-share:/crisidev-share -v /unsafe:/unsafe \
   hub.crisidev.org:5000/crisidev/plex
 ExecStartPost=-/usr/bin/etcdctl set /crisidev/plex.crisidev.org '{"tcp":[32400],"https":[32400],"htaccess":"false"}'
 ExecStop=-/usr/bin/etcdctl rm /crisidev/plex.crisidev.org
