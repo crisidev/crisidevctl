@@ -1,5 +1,5 @@
 [Unit]
-Description=Sickbeard
+Description=SickRage
 After=docker.service
 After=registrator.service
 Requires=registrator.service
@@ -8,10 +8,11 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill tv.crisidev.org
-ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/sickbeard
+ExecStartPre=-/usr/bin/docker rm tv.crisidev.org
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/sickrage
 ExecStart=/usr/bin/docker run --rm --name tv.crisidev.org \
   --expose 9092 -e SERVICE_ID=tv -e SERVICE_NAME=tv -v /unsafe:/unsafe -v /crisidev-share:/crisidev-share \
-  hub.crisidev.org:5000/crisidev/sickbeard
+  hub.crisidev.org:5000/crisidev/sickrage
 ExecStartPost=-/usr/bin/etcdctl set /crisidev/tv.crisidev.org '{"https":[9092],"htaccess":"false"}'
 ExecStop=-/usr/bin/etcdctl rm /crisidev/tv.crisidev.org
 ExecStop=/usr/bin/docker stop tv.crisidev.org

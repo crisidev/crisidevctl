@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill plex.crisidev.org
+ExecStartPre=-/usr/bin/docker rm plex.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/plex
 ExecStart=/usr/bin/docker run --rm --name plex.crisidev.org \
   --expose 32400 -e SERVICE_ID=plex -e SERVICE_NAME=plex \

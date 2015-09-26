@@ -164,7 +164,6 @@ class CrisidevClusterInit(object):
                 os.remove(value['tmpfile'])
 
     def do(self):
-        fleetui_host_number = randint(0, len(self.dns_names))
         try:
             self._get_password_hash()
             self._get_ssh_keys()
@@ -178,7 +177,7 @@ class CrisidevClusterInit(object):
                 tmpfile = tempfile.mktemp()
                 self.config_dict[hostname]['tmpfile'] = tmpfile
                 address = self.addresses[self.dns_names.index(hostname)]
-                if fleetui_host_number == i:
+                if i == 0:
                     enable_fleetui = True
                 self._write_temp_cloud_config(hostname, address, tmpfile, enable_fleetui)
                 disk_path = self._create_vbox_disk(hostname)

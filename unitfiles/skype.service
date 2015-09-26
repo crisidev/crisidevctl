@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill skype.crisidev.org
+ExecStartPre=-/usr/bin/docker rm skype.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/skype.crisidev.org
 ExecStart=/usr/bin/docker run -t --rm --name skype.crisidev.org \
   --expose 2727 -e SERVICE_ID=skype -e SERVICE_NAME=skype \

@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill irssi.crisidev.org
+ExecStartPre=-/usr/bin/docker rm irssi.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/irssi
 ExecStart=/usr/bin/docker run -t --rm --name irssi.crisidev.org --hostname irssi \
   --expose 22 -e SERVICE_ID=irssi -e SERVICE_NAME=irssi -v /crisidev-share/irssi/.irssi:/home/irssi/.irssi \

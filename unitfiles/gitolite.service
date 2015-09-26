@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill gitolite.crisidev.org
+ExecStartPre=-/usr/bin/docker rm gitolite.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/gitolite
 ExecStart=/usr/bin/docker run --rm --name gitolite.crisidev.org \
   --expose 22 -e SERVICE_ID=git -e SERVICE_NAME=git \

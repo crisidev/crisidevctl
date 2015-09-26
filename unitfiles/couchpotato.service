@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill movies.crisidev.org
+ExecStartPre=-/usr/bin/docker rm movies.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/couchpotato
 ExecStart=/usr/bin/docker run --rm --name movies.crisidev.org \
   --expose 9093 -e SERVICE_ID=movies -e SERVICE_NAME=movies -v /unsafe:/unsafe -v /crisidev-share:/crisidev-share \

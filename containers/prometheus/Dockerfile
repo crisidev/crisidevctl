@@ -17,6 +17,8 @@ RUN wget http://repo.crisidev.org/armhf/promtool -O /usr/local/bin/promtool
 RUN chmod +x /usr/local/bin/prometheus /usr/local/bin/promtool
 RUN mkdir -p /etc/prometheus /var/lib/prometheus
 ADD prometheus.yml /etc/prometheus/prometheus.yml
+ADD consoles /etc/prometheus/consoles
+ADD console_libraries /etc/prometheus/console_libraries
 
 # cleanup
 RUN apt-get update && \
@@ -31,4 +33,8 @@ RUN apt-get update && \
 
 EXPOSE 9090
 
-CMD ["/usr/local/bin/prometheus", "-config.file", "/etc/prometheus/prometheus.yml", "-storage.local.path", "/var/lib/prometheus"]
+CMD ["/usr/local/bin/prometheus",
+     "-config.file", "/etc/prometheus/prometheus.yml",
+     "-web.console.libraries", "/etc/prometheus/console_libraries",
+     "-web.console.templates", "/etc/prometheus/consoles",
+     "-storage.local.path", "/var/lib/prometheus"]

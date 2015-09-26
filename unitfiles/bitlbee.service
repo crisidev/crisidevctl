@@ -8,6 +8,7 @@ Requires=registrator.service
 Restart=on-failure
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill biltbee.crisidev.org
+ExecStartPre=-/usr/bin/docker rm bitlbee.crisidev.org
 ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/bitlbee
 ExecStart=/usr/bin/docker run --rm --name bitlbee.crisidev.org \
   --expose 6667 -e SERVICE_ID=bitlbee -e SERVICE_NAME=bitlbee \
