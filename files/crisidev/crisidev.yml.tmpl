@@ -229,7 +229,7 @@ coreos:
            --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw \
            --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
            google/cadvisor
-        ExecStartPost=-/usr/bin/etcdctl set /crisidev/private/cadvisor-${HNAME}.crisidev.org '{"http":[8080]}'
+        ExecStartPost=-/usr/bin/etcdctl set /crisidev/private/cadvisor-${HNAME}.cadvisor.crisidev.org '{"http":[8080]}'
         ExecStop=/usr/bin/docker stop cadvisor
 
         [Install]
