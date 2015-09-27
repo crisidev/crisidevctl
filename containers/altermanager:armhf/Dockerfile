@@ -31,4 +31,5 @@ EXPOSE 9090
 
 CMD ["/usr/local/bin/alertmanager", \
      "-config.file", "/etc/alertmanager/alertmanager.conf", \
-     "-notification.smtp.smarthost", "172.17.42.1"]
+     "-notification.smtp.smarthost", "172.17.42.1", \
+     "-web.hostname", "https://alert.crisidev.org"]
