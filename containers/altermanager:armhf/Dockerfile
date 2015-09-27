@@ -29,7 +29,8 @@ RUN apt-get update && \
 
 EXPOSE 9090
 
-CMD ["/usr/local/bin/alertmanager", \
+ENTRYPOINT ["/usr/local/bin/alertmanager", \
      "-config.file", "/etc/alertmanager/alertmanager.conf", \
      "-notification.smtp.smarthost", "172.17.42.1", \
+     "-notification.smtp.sender", "alert@crisidev.org",
      "-web.hostname", "https://alert.crisidev.org"]
