@@ -1,0 +1,731 @@
+{
+  "id": 4,
+  "title": "NodeExporter Network",
+  "originalTitle": "NodeExporter Network",
+  "tags": [
+    "node_exporter",
+    "NET"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": false,
+  "rows": [
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 1,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_receive_bytes{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_receive_bytes%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22301s%22%2C%22end_input%22%3A%222015-9-27%2014%3A15%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Receive Bytes",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "Bps",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 2,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_transmit_bytes{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_transmit_bytes%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22300s%22%2C%22end_input%22%3A%222015-9-27%2014%3A16%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Transmit Bytes",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "Bps",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_receive_packets{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_receive_packets%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22300s%22%2C%22end_input%22%3A%222015-9-27%2014%3A16%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Receive Packets",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 9,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_transmit_packets{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_transmit_packets%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22300s%22%2C%22end_input%22%3A%222015-9-27%2014%3A16%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Transmit Packets",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ]
+        }
+      ],
+      "title": "Row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 3,
+          "leftYAxisLabel": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_receive_drop{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_receive_drop%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22300s%22%2C%22end_input%22%3A%222015-9-27%2014%3A17%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Receive Drops",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 5,
+          "leftYAxisLabel": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_transmit_drop{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_transmit_drop%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22300s%22%2C%22end_input%22%3A%222015-9-27%2014%3A17%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Transmit Drops",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 7,
+          "leftYAxisLabel": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_receive_errs{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_receive_errs%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22112s%22%2C%22end_input%22%3A%222015-9-27%2014%3A17%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Receive Errors",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 6,
+          "leftYAxisLabel": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_network_transmit_errs{instance=~'$host',device!~'^lo'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_network_transmit_errs%7Binstance%3D~'%24host'%2Cdevice!~'%5Elo'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22112s%22%2C%22end_input%22%3A%222015-9-27%2014%3A17%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Transmit Errs",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        }
+      ],
+      "title": "New row"
+    }
+  ],
+  "nav": [
+    {
+      "collapse": false,
+      "enable": true,
+      "notice": false,
+      "now": false,
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "status": "Stable",
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "type": "timepicker"
+    }
+  ],
+  "time": {
+    "from": "2015-09-27T14:15:25.396Z",
+    "to": "2015-09-27T14:17:17.198Z"
+  },
+  "templating": {
+    "list": [
+      {
+        "allFormat": "glob",
+        "auto": true,
+        "auto_count": 5,
+        "current": {
+          "text": "auto",
+          "value": "$__auto_interval"
+        },
+        "datasource": null,
+        "includeAll": false,
+        "name": "step",
+        "options": [
+          {
+            "text": "auto",
+            "value": "$__auto_interval"
+          },
+          {
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "text": "14d",
+            "value": "14d"
+          },
+          {
+            "text": "30d",
+            "value": "30d"
+          }
+        ],
+        "query": "1m,5m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "refresh_on_load": false,
+        "type": "interval"
+      },
+      {
+        "allFormat": "glob",
+        "current": {
+          "text": "node1.crisidev.org",
+          "value": "node1.crisidev.org"
+        },
+        "datasource": null,
+        "includeAll": false,
+        "name": "host",
+        "options": [
+          {
+            "text": "shuttle.crisidev.org",
+            "value": "shuttle.crisidev.org"
+          },
+          {
+            "text": "node0.crisidev.org",
+            "value": "node0.crisidev.org"
+          },
+          {
+            "text": "node1.crisidev.org",
+            "value": "node1.crisidev.org"
+          },
+          {
+            "text": "snatch.crisidev.org",
+            "value": "snatch.crisidev.org"
+          }
+        ],
+        "query": "shuttle.crisidev.org,node0.crisidev.org,node1.crisidev.org,snatch.crisidev.org",
+        "refresh_on_load": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "refresh": false,
+  "schemaVersion": 6,
+  "version": 23
+}

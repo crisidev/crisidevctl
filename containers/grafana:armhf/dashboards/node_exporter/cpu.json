@@ -1,0 +1,1189 @@
+{
+  "id": 11,
+  "title": "NodeExporter CPU",
+  "originalTitle": "NodeExporter CPU",
+  "tags": [
+    "node_exporter",
+    "CPU"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": false,
+  "rows": [
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 13,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "node_load1{instance=~'$host'}",
+              "intervalFactor": 2,
+              "metric": "node_load1",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22node_load1%7Binstance%3D~'%24host'%7D%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2014%3A23%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Load 1m",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 14,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (mode)(rate(node_cpu{job='node',instance=~'$host',mode!='idle'}[$step])) * 100 / scalar(count(count by (cpu)(node_cpu{job='node',instance=~'shuttle.crisidev.org'})))",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(mode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Cmode!%3D'idle'%7D%5B%24step%5D))%20*%20100%20%2F%20scalar(count(count%20by%20(cpu)(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'shuttle.crisidev.org'%7D)))%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2014%3A25%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            },
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum(rate(node_cpu{job='node',instance=~'$host'}[$step]))",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "total",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%7D%5B%24step%5D))%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2014%3A25%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Cumulative CPU Usage",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        }
+      ],
+      "title": "New row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 1,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu0\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu0%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A8%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 0",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 2,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu1\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu1%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22901s%22%2C%22end_input%22%3A%222015-9-27%2013%3A31%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 1",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 3,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu2\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu2%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22901s%22%2C%22end_input%22%3A%222015-9-27%2013%3A32%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 2",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 4,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu3\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu3%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A32%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 3",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu4\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu4%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A33%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 4",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 6,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu5\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu5%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A33%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 5",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 7,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu6\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu6%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A32%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 6",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": 100,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {}
+          ],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "sum by (cpu,mode)(rate(node_cpu{job='node',instance=~'$host',cpu=\"cpu7\"}[$step])) * 100",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22sum%20by%20(cpu%2Cmode)(rate(node_cpu%7Bjob%3D'node'%2Cinstance%3D~'%24host'%2Ccpu%3D%5C%22cpu7%5C%22%7D%5B%24step%5D))%20*%20100%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A32%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Core 7",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ]
+        }
+      ],
+      "title": "Row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 9,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "node_procs_running{job='node',instance=~'$host'}",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "running",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22node_procs_running%7Bjob%3D'node'%2Cinstance%3D~'%24host'%7D%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A35%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            },
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "node_procs_blocked{job='node',instance=~'$host'}",
+              "intervalFactor": 2,
+              "legendFormat": "blocked",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22node_procs_blocked%7Bjob%3D'node'%2Cinstance%3D~'%24host'%7D%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A35%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D",
+              "target": ""
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Processes",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 10,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_forks{instance=~'$host'}[5m])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "n",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_forks%7Binstance%3D~'%24host'%7D%5B5m%5D)%22%2C%22range_input%22%3A%22901s%22%2C%22end_input%22%3A%222015-9-27%2013%3A34%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fork Time",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "s",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 11,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_context_switches{instance=~'$host'}[$step])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "n",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_context_switches%7Binstance%3D~'%24host'%7D%5B%24step%5D)%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A35%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Context Switches",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 12,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "calculatedInterval": "2s",
+              "datasourceErrors": {},
+              "errors": {},
+              "expr": "rate(node_intr{instance=~'$host'}[5m])",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "n",
+              "metric": "",
+              "prometheusLink": "/api/datasources/proxy/1/graph#%5B%7B%22expr%22%3A%22rate(node_intr%7Binstance%3D~'%24host'%7D%5B5m%5D)%22%2C%22range_input%22%3A%22900s%22%2C%22end_input%22%3A%222015-9-27%2013%3A34%22%2C%22step_input%22%3A%22%22%2C%22stacked%22%3Afalse%2C%22tab%22%3A0%7D%5D"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Interrups",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        }
+      ],
+      "title": "New row"
+    }
+  ],
+  "nav": [
+    {
+      "collapse": false,
+      "enable": true,
+      "notice": false,
+      "now": true,
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "status": "Stable",
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "type": "timepicker"
+    }
+  ],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "allFormat": "glob",
+        "auto": true,
+        "auto_count": 5,
+        "current": {
+          "text": "auto",
+          "value": "$__auto_interval"
+        },
+        "datasource": null,
+        "includeAll": false,
+        "name": "step",
+        "options": [
+          {
+            "text": "auto",
+            "value": "$__auto_interval"
+          },
+          {
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "text": "14d",
+            "value": "14d"
+          },
+          {
+            "text": "30d",
+            "value": "30d"
+          }
+        ],
+        "query": "1m,5m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "refresh_on_load": false,
+        "type": "interval"
+      },
+      {
+        "allFormat": "glob",
+        "current": {
+          "text": "shuttle.crisidev.org",
+          "value": "shuttle.crisidev.org"
+        },
+        "datasource": null,
+        "includeAll": true,
+        "name": "host",
+        "options": [
+          {
+            "text": "shuttle.crisidev.org",
+            "value": "shuttle.crisidev.org"
+          },
+          {
+            "text": "node0.crisidev.org",
+            "value": "node0.crisidev.org"
+          },
+          {
+            "text": "node1.crisidev.org",
+            "value": "node1.crisidev.org"
+          },
+          {
+            "text": "snatch.crisidev.org",
+            "value": "snatch.crisidev.org"
+          }
+        ],
+        "query": "shuttle.crisidev.org,node0.crisidev.org,node1.crisidev.org,snatch.crisidev.org",
+        "refresh": true,
+        "refresh_on_load": false,
+        "regex": "/((?:[a-z][a-z\\\\.\\\\d\\\\-]+)\\\\.(?:[a-z][a-z\\\\-]+))(?![\\\\w\\\\.])/",
+        "type": "custom"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "schemaVersion": 6,
+  "version": 16
+}
