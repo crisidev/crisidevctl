@@ -12,8 +12,7 @@ RUN wget -O - http://apt.crisidev.org/bigo@crisidev.org.gpg.key |apt-key add -
 
 RUN apt-get update && apt-get -y install libfontconfig adduser openssl ca-certificates grafana
 
-RUN mkdir -p /var/lib/grafana
-ADD grafana.ini /etc/grafana/
+RUN mkdir -p /var/lib/grafana /etc/grafana
 ADD prometheus /usr/share/grafana/public/app/plugins/datasource/prometheus
 
 WORKDIR /usr/share/grafana

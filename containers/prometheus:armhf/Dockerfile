@@ -12,11 +12,10 @@ RUN apt-get -y install ca-certificates
 
 # Go
 WORKDIR /
-RUN wget http://repo.crisidev.org/armhf/prometheus -O /usr/local/bin/prometheus 
-RUN wget http://repo.crisidev.org/armhf/promtool -O /usr/local/bin/promtool 
+RUN wget http://repo.crisidev.org/armhf/prometheus -O /usr/local/bin/prometheus
+RUN wget http://repo.crisidev.org/armhf/promtool -O /usr/local/bin/promtool
 RUN chmod +x /usr/local/bin/prometheus /usr/local/bin/promtool
 RUN mkdir -p /etc/prometheus /var/lib/prometheus
-ADD prometheus.yml /etc/prometheus/prometheus.yml
 ADD consoles /etc/prometheus/consoles
 ADD console_libraries /etc/prometheus/console_libraries
 
@@ -33,8 +32,10 @@ RUN apt-get update && \
 
 EXPOSE 9090
 
-CMD ["/usr/local/bin/prometheus",
-     "-config.file", "/etc/prometheus/prometheus.yml",
-     "-web.console.libraries", "/etc/prometheus/console_libraries",
-     "-web.console.templates", "/etc/prometheus/consoles",
-     "-storage.local.path", "/var/lib/prometheus"]
+CMD ["/usr/local/bin/prometheus", \
+     "-config.file", "/etc/prometheus/prometheus.yml", \
+     "-web.console.libraries", "/etc/prometheus/console_libraries", \
+     "-web.console.templates", "/etc/prometheus/consoles", \
+     "-storage.local.path", "/var/lib/prometheus", \
+     "-web.external-url", "https://prometheus.crisidev.org", \
+     "-alertmanager.url", "http://alert:9093"]
