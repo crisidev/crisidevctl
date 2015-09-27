@@ -14,7 +14,7 @@ RUN apt-get -y install ca-certificates
 WORKDIR /
 RUN wget http://repo.crisidev.org/armhf/alertmanager -O /usr/local/bin/alertmanager
 RUN chmod +x /usr/local/bin/alertmanager
-RUN mkdir -p /etc/altermanager
+RUN mkdir -p /etc/alertmanager
 
 # cleanup
 RUN apt-get update && \
@@ -30,5 +30,5 @@ RUN apt-get update && \
 EXPOSE 9090
 
 CMD ["/usr/local/bin/alertmanager", \
-     "-config.file", "/etc/altermanager/altermanager.conf", \
+     "-config.file", "/etc/alertmanager/alertmanager.conf", \
      "-notification.smtp.smarthost", "172.17.42.1"]
