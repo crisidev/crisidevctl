@@ -1,0 +1,26 @@
+[Unit]
+Description=Sonarr
+After=docker.service
+After=registrator.crisidev.org.service
+Requires=registrator.crisidev.org.service
+
+[Service]
+Restart=always
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill tv.crisidev.org
+ExecStartPre=-/usr/bin/docker rm tv.crisidev.org
+ExecStartPre=-/usr/bin/docker pull hub.crisidev.org:5000/crisidev/sonarr
+ExecStart=/usr/bin/docker run --rm --name tv.crisidev.org \
+  --expose 8989 -e SERVICE_ID=tv -e SERVICE_NAME=tv \
+  -v /unsafe:/unsafe -v /crisidev-share:/crisidev-share \
+  -v /crisidev-share/snatch/sonarr:/volumes/config \
+  hub.crisidev.org:5000/crisidev/sonarr
+ExecStartPost=-/usr/bin/etcdctl set /crisidev/tv.crisidev.org '{"https":[8989],"htaccess":"false"}'
+ExecStop=-/usr/bin/etcdctl rm /crisidev/tv.crisidev.org
+ExecStop=/usr/bin/docker stop tv.crisidev.org
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata="type=snatch"

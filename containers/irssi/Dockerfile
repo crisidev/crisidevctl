@@ -13,7 +13,7 @@ RUN dpkg-reconfigure localepurge
 
 # Update and install
 RUN apt-get update && apt-get -y install tmux irssi irssi-plugin-otr ssh vim-nox \
-  tmux ca-certificates libtime-duration-perl libtimedate-perl
+  tmux ca-certificates libtime-duration-perl libtimedate-perl libwww-perl
 
 RUN mkdir /var/run/sshd
 

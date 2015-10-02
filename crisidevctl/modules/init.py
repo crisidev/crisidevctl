@@ -2,7 +2,6 @@ import os
 import urllib2
 import tempfile
 import logging
-from random import randint
 from functools import partial
 from multiprocessing.dummy import Pool
 from jinja2 import Template
@@ -27,12 +26,14 @@ class CrisidevClusterInit(object):
         self.ssh_priv_key = args.ssh_priv_key
         self.ssh_pub_key = args.ssh_pub_key
         self.renew_etcd = args.renew_etcd
+        self.domain = args.domain
+        self.cluster = args.cluster
         if os.path.exists(args.cloud_config):
             self.cloud_config = args.cloud_config
         else:
             raise CrisidevException("cloud init %s config file not found" % args.cloud_config)
-        self.dns_names = self._analyze_input_list(args.dns_names)
-        self.addresses = self._analyze_input_list(args.addresses)
+        self.addresses = [x.strip() for x in args.addresses.split(",")]
+        self.dns_names = self._analyze_dns_names(args.dns_names)
         if len(self.dns_names) != len(self.addresses):
             raise CrisidevException("parameters --dns_names and --addresses have different members number")
         log.info("initialising {} new VM disks".format(len(self.dns_names)))
@@ -41,9 +42,12 @@ class CrisidevClusterInit(object):
     def __call__(self):
         self.do()
 
-    def _analyze_input_list(self, input_list):
+    def _analyze_dns_names(self, input_list):
         tokens = input_list.split(",")
         tokens = [x.strip() for x in tokens]
+        for token in tokens:
+            if self.domain not in token:
+                raise CrisidevException("domain name %s and hostname %s does not match" % (self.domain, token))
         return tokens
 
     def _read_etcd_key(self):
@@ -115,6 +119,8 @@ class CrisidevClusterInit(object):
             template = Template(fd.read())
             render = template.render(hostname=hostname, address=address,
                                      shortname=shortname,
+                                     domain=self.domain,
+                                     cluster=self.cluster,
                                      flavour=flavour,
                                      etcd_key=self.etcd_key,
                                      password_hash=self.password_hash,

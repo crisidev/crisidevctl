@@ -62,7 +62,7 @@ Commands:
         # prefixing the argument with -- means it's optional
         parser.add_argument("-e", "--renew_etcd", dest="renew_etcd", required=False,
                             action="store_true", help="Renew etcd key for the cluster")
-        parser.add_argument("-d", "--disk_size", dest="disk_size", required=False, default=0,
+        parser.add_argument("-D", "--disk_size", dest="disk_size", required=False, default=0,
                             help="Size for new disks in GB")
         parser.add_argument("-c", "--cloud_config", dest="cloud_config", required=True, help="Cloud-config template")
         parser.add_argument("-n", "--dns_names", dest="dns_names", required=True,
@@ -73,6 +73,10 @@ Commands:
                             help="SSH public key file for the cluster")
         parser.add_argument("-K", "--ssh-priv-key", dest="ssh_priv_key", required=True,
                             help="SSH privaate key file for the cluster")
+        parser.add_argument("-d", "--domain", dest="domain", required=True,
+                            help="domain name for the cluster")
+        parser.add_argument("-C", "--cluster", dest="cluster", required=True,
+                            help="cluster name")
         parser.add_argument("--dry-run", dest="dry_run", required=False, default=False,
                             action="store_true", help="Run without installing CoreOS")
         # now that we're inside a subcommand, ignore the first

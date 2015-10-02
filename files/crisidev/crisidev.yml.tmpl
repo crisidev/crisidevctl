@@ -29,7 +29,7 @@ coreos:
       - name: 50-network-config.conf
         content: |
           [Service]
-          ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"10.0.0.0/16","SubnetLen":24,"SubnetMin":"10.0.1.0","SubnetMax":"10.0.3.0"}'
+          ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"10.0.0.0/16","SubnetLen":24,"SubnetMin":"10.0.1.0","SubnetMax":"10.0.20.0"}'
     - name: fleet.service
       command: start
     - name: docker-tcp.socket
@@ -70,30 +70,30 @@ coreos:
         DNS=8.8.8.8
         Address={{ address }}/24
         Gateway=192.168.0.1
-    - name: mkdir-crisidev-share.service
+    - name: mkdir-{{ cluster }}-share.service
       command: start
       content: |
         [Unit]
-        Description=Create the mount directory /crisidev-share and /unsafe
+        Description=Create the mount directory /{{ cluster }}-share and /unsafe
 
         [Service]
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/mkdir -p /crisidev-share
+        ExecStart=/usr/bin/mkdir -p /{{ cluster }}-share
         ExecStart=/usr/bin/mkdir -p /unsafe
-        ExecStart=/usr/bin/chown core:core /crisidev-share
+        ExecStart=/usr/bin/chown core:core /{{ cluster }}-share
         ExecStart=/usr/bin/chown core:core /unsafe
-    - name: crisidev\x2dshare.mount
+    - name: {{ cluster }}\x2dshare.mount
       command: start
       content: |
         [Unit]
-        Description=Mount crisidev-share onto /crisidev-share
-        Requires=mkdir-crisidev-share.service
-        After=mkdir-crisidev-share.service
+        Description=Mount {{ cluster }}-share onto /{{ cluster }}-share
+        Requires=mkdir-{{ cluster }}-share.service
+        After=mkdir-{{ cluster }}-share.service
 
         [Mount]
-        What=crisidev-share
-        Where=/crisidev-share
+        What={{ cluster }}-share
+        Where=/{{ cluster }}-share
         Type=9p
         Options=trans=virtio,cache=mmap
 
@@ -104,8 +104,8 @@ coreos:
       content: |
         [Unit]
         Description=Mount unsafe onto /unsafe
-        Requires=mkdir-crisidev-share.service
-        After=mkdir-crisidev-share.service
+        Requires=mkdir-{{ cluster }}-share.service
+        After=mkdir-{{ cluster }}-share.service
 
         [Mount]
         What=unsafe
@@ -126,23 +126,24 @@ coreos:
 
         [Service]
         Type=oneshot
-        ExecStart=-/usr/bin/etcdctl mkdir /skydns/org/crisidev
-        ExecStart=-/usr/bin/etcdctl mkdir /crisidev
-        ExecStart=-/usr/bin/etcdctl mkdir /crisidev/private
-        ExecStart=/usr/bin/etcdctl set /crisidev/{{ hostname }} '{"tcp":[22]}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/shuttle '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/apt '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/hub '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/repo '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/private-repo '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/{{ shortname }} '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/org/crisidev/etcd/{{ shortname }} '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/config '{"domain":"crisidev.org","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
+        ExecStart=-/usr/bin/etcdctl mkdir /skydns/{{ domain.split(".")[1] }}/{{ cluster }}
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/private
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
+        ExecStart=/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/shuttle '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/apt '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hub '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/private-repo '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
         ExecStart=/usr/bin/systemctl stop update-engine.service
 
         [Install]
         WantedBy=user-config.target
-    - name: skydns.service
+    - name: skydns.{{ domain }}.service
       command: start
       enable: true
       content: |
@@ -155,109 +156,110 @@ coreos:
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill skydns
-        ExecStartPre=-/usr/bin/docker rm skydns
+        ExecStartPre=-/usr/bin/docker kill skydns.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm skydns.{{ domain }}
         ExecStartPre=-/usr/bin/docker pull skynetservices/skydns
         ExecStartPre=-/usr/bin/etcdctl set /skydns/cluster/hosts/%m '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/docker run --rm --name skydns --net host -e PROMETHEUS_PORT=3000 skynetservices/skydns
-        ExecStop=/usr/bin/docker stop skydns
+        ExecStart=/usr/bin/docker run --rm --name skydns.{{ domain }} --net host -e PROMETHEUS_PORT=3000 skynetservices/skydns
+        ExecStop=/usr/bin/docker stop skydns.{{ domain }}
 
         [Install]
         WantedBy=user-config.target
-    - name: registrator.service
+    - name: registrator.{{ domain }}.service
       command: start
       enable: true
       content: |
         [Unit]
         Description=Registrator
-        After=skydns.service
-        Requires=skydns.service
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
 
         [Service]
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill registrator
-        ExecStartPre=-/usr/bin/docker rm registrator
+        ExecStartPre=-/usr/bin/docker kill registrator.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm registrator.{{ domain }}
         ExecStartPre=-/usr/bin/docker pull gliderlabs/registrator
-        ExecStart=/usr/bin/docker run --rm --name registrator -v /var/run/docker.sock:/tmp/docker.sock \
-           gliderlabs/registrator -ttl 300 -ttl-refresh 280 -resync 600 -internal skydns2://{{ address }}:4001/crisidev.org
-        ExecStop=/usr/bin/docker stop registrator
+        ExecStart=/usr/bin/docker run --rm --name registrator.{{ domain }} -v /var/run/docker.sock:/tmp/docker.sock \
+           gliderlabs/registrator -ttl 300 -ttl-refresh 280 -resync 600 -internal skydns2://{{ address }}:4001/{{ domain }}
+        ExecStop=/usr/bin/docker stop registrator.{{ domain }}
 
         [Install]
         WantedBy=user-config.target
-    - name: node_exporter.service
+    - name: node_exporter.{{ domain }}.service
       command: start
       enable: true
       content: |
         [Unit]
         Description=Prometheus Node Exporter
-        After=skydns.service
-        Requires=skydns.service
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
 
         [Service]
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill node_exporter
-        ExecStartPre=-/usr/bin/docker rm node_exporter
+        ExecStartPre=-/usr/bin/docker kill node_exporter.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm node_exporter.{{ domain }}
         ExecStartPre=-/usr/bin/docker pull prom/node-exporter
-        ExecStart=/usr/bin/docker run --rm --name node_exporter --net="host" prom/node-exporter
-        ExecStop=/usr/bin/docker stop node_exporter
+        ExecStart=/usr/bin/docker run --rm --name node_exporter.{{ domain }} --net="host" prom/node-exporter
+        ExecStop=/usr/bin/docker stop node_exporter.{{ domain }}
 
         [Install]
         WantedBy=user-config.target
-    - name: cadvisor.service
+    - name: cadvisor.{{ domain }}.service
       command: start
       enable: true
       content: |
         [Unit]
         Description=Cadvisor
-        After=registrator.service
-        Requires=registrator.service
+        After=registrator.{{ domain }}.service
+        Requires=registrator.{{ domain }}.service
 
         [Service]
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
         EnvironmentFile=/etc/environment
-        ExecStartPre=-/usr/bin/docker kill cadvisor
-        ExecStartPre=-/usr/bin/docker rm cadvisor
+        ExecStartPre=-/usr/bin/docker kill cadvisor.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm cadvisor.{{ domain }}
         ExecStartPre=-/usr/bin/docker pull google/cadvisor
-        ExecStart=/usr/bin/docker run --rm --name cadvisor -p 8080:8080 \
+        ExecStart=/usr/bin/docker run --rm --name cadvisor.{{ domain }} -p 8080:8080 \
            -e SERVICE_ID=cadvisor-${HNAME} -e SERVICE_NAME=cadvisor \
            --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw \
            --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
            google/cadvisor
-        ExecStartPost=-/usr/bin/etcdctl set /crisidev/private/cadvisor-${HNAME}.cadvisor.crisidev.org '{"http":[8080]}'
-        ExecStop=/usr/bin/docker stop cadvisor
+        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }} '{"http":[8080]}'
+        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }}
+        ExecStop=/usr/bin/docker stop cadvisor.{{ domain }}
 
         [Install]
         WantedBy=user-config.target
 {% if enable_fleetui %}
-    - name: fleetui.service
+    - name: fleetui.{{ domain }}.service
       command: start
       enable: true
       content: |
         [Unit]
         Description=FleetUI
-        After=cadvisor.service
-        Requires=cadvisor.service
+        After=cadvisor.{{ domain }}.service
+        Requires=cadvisor.{{ domain }}.service
 
         [Service]
         Restart=always
         RestartSec=5
         TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill fleetui.crisidev.org
-        ExecStartPre=-/usr/bin/docker rm fleetui.crisidev.org
+        ExecStartPre=-/usr/bin/docker kill fleetui.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm fleetui.{{ domain }}
         ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
         ExecStartPre=-/usr/bin/chown -R core:core /home/core
-        ExecStart=/usr/bin/docker run --rm --name fleetui.crisidev.org --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
-          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.crisidev.org:4001 \
+        ExecStart=/usr/bin/docker run --rm --name fleetui.{{ domain }} --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
+          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.{{ domain }}:4001 \
           purpleworks/fleet-ui
-        ExecStartPost=-/usr/bin/etcdctl set /crisidev/fleetui.crisidev.org '{"https":[3000], "htaccess":"true"}'
-        ExecStop=-/usr/bin/etcdctl rm /crisidev/fleetui.crisidev.org
-        ExecStop=/usr/bin/docker stop fleetui.crisidev.org
+        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/fleetui.{{ domain }} '{"https":[3000], "htaccess":"true"}'
+        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/fleetui.{{ domain }}
+        ExecStop=/usr/bin/docker stop fleetui.{{ domain }}
 
         [Install]
         WantedBy=user-config.target
@@ -268,8 +270,8 @@ coreos:
       content: |
         [Unit]
         Description=Toolbox
-        After=skydns.service
-        Requires=skydns.service
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
 
         [Service]
         Type=oneshot
@@ -289,16 +291,10 @@ write_files:
     HOSTNAME={{ hostname }}
     HNAME={{ shortname }}
     IPADDR={{ address }}
-- path: /etc/hosts
-  content: |
-    192.168.0.1 shuttle.crisidev.org shuttle
-    192.168.0.2 node0.crisidev.org node0
-    192.168.0.3 node1.crisidev.org node1
-    192.168.0.4 snatch.crisidev.org snatch
 - path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
   content: |
     [Service]
-    Environment='DOCKER_OPTS=--insecure-registry="192.168.0.0/24" --insecure-registry="10.0.0.0/16" --insecure-registry hub.crisidev.org:5000 -dns {{ address }}'
+    Environment='DOCKER_OPTS=--insecure-registry="192.168.0.0/24" --insecure-registry="10.0.0.0/16" --insecure-registry hub.{{ domain }}:5000 -dns {{ address }}'
 - path: /home/core/.ssh/id_rsa
   content: |
 {{ ssh_private_key|indent(4, true) }}
