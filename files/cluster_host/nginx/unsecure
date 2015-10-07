@@ -1,0 +1,12 @@
+server {
+  listen   80;
+  server_name repo.DOMAIN;
+
+  access_log /var/log/nginx/repo.DOMAIN-access.log;
+	error_log /var/log/nginx/repo.DOMAIN-error.log;
+
+	location / {
+    root /CLUSTER-share/www/repo;
+      autoindex on;
+    }
+}
