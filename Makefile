@@ -7,7 +7,9 @@ install: copy-files
 copy-files:
 	sudo mkdir -p /etc/$(CLUSTER)
 	sudo cp ./files/crisidev/* /etc/$(CLUSTER)
-	sudo cp ./config.json /etc/$(CLUSTER)
+	cat ./files/crisidev/nginx-http.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/$(CLUSTER)/nginx-http.conf.tmpl
+	cat ./files/crisidev/nginx-https.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/$(CLUSTER)/nginx-https.conf.tmpl
+	cat ./config.json |sed 's/USERNAME/$(USERNAME)/g' |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/$(CLUSTER)/config.json
 	sudo cp ./bin/coreos-install /usr/local/bin
 	echo "REMEMBER TO EDIT /etc/$(CLUSTER)/config.json"
 	cat ./files/cluster_host/nginx/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/nginx/sites-enabled/unsecure
