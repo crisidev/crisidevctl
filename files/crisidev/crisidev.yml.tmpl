@@ -132,9 +132,6 @@ coreos:
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
         ExecStart=/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
         ExecStart=/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/shuttle '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/apt '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hub '{"host":"192.168.0.1"}'
         ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
         ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/private-repo '{"host":"192.168.0.1"}'
         ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
