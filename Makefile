@@ -27,6 +27,8 @@ install-go-bin:
 	go get -v github.com/coreos/fleet/fleetctl
 	go install -v github.com/coreos/etcdctl
 	go install -v github.com/coreos/fleet/fleetctl
+	cp $$GOPATH/bin/etcdctl /usr/local/bin
+	cp $$GOPATH/bin/fleetctl /usr/local/bin
 
 install-crisidevctl:
 	sudo python setup.py install
