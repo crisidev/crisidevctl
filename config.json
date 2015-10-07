@@ -3,46 +3,20 @@
     "coreos_update_channel": "beta",
     "coreos_image": "/tmp/coreos_image",
     "coreos_image_url": "http://repo.crisidev.org/coreos/coreos_production_image-beta.bin.bz2",
-    "etcd_keyfile": "/etc/crisidev/etcd.key",
-    "nat_reserved_ports": {
-        "swarmirssi.crisidev.org": [
-            22,
-            21
-        ],
-        "irssi.crisidev.org": [
-            22,
-            1022
-        ],
-        "node1.crisidev.org": [
-            22,
-            1024
-        ],
-        "git.crisidev.org": [
-            22,
-            2222
-        ],
-        "node0.crisidev.org": [
-            22,
-            1023
-        ],
-        "snatch.crisidev.org": [
-            22,
-            1025
-        ]
-    },
-    "firewall_file": "/etc/crisidev/firewall",
-    "registry_unitfile": "/etc/systemd/system/registry.service",
+    "etcd_keyfile": "/etc/CLUSTER/etcd.key",
+    "nat_reserved_ports": {},
+    "firewall_file": "/etc/CLUSTER/firewall",
     "kvm_bridge": "br0",
-    "etcd_host": "etcd.crisidev.org",
+    "etcd_host": "etcd.DOMAIN",
     "nginx_config_file": "/etc/nginx/sites-enabled/crisidev-{}",
     "etcd_dir_coreos_subnet": "/coreos.com/network/subnets",
     "etcd_port": 4001,
-    "firewall_template": "/etc/crisidev/firewall.tmpl",
-    "kvm_user": "bigo",
-    "kvm_vg_name": "crisidev",
-    "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
-    "firewall_file_safe": "/etc/crisidev/firewall.safe",
-    "etcd_dir_crisidev": "/crisidev",
+    "firewall_template": "/etc/CLUSTER/firewall.tmpl",
+    "kvm_user": "USERNAME",
+    "kvm_vg_name": "CLUSTER",
+    "nginx_template": "/etc/CLUSTER/nginx-{}.conf.tmpl",
+    "firewall_file_safe": "/etc/CLUSTER/firewall.safe",
+    "etcd_dir_crisidev": "/CLUSTER",
     "nat_port_mapping": {
         "22": 1022,
         "80": 8000,
