@@ -77,13 +77,13 @@ class CrisidevClusterInit(object):
         with open(cfg.etcd_keyfile, "w") as fd:
             fd.write(self.etcd_key)
 
-    def _create_vbox_disk(self, name):
-        disk_path = os.path.join(cfg.kvm_disk_path, "{}.raw".format(name))
+    def _create_vm_disk(self, name):
+        shortname = name.split(".")[0]
+        disk_path = os.path.join("/dev/mapper", "{}-{}".format(cfg.kvm_vg_name, shortname))
         if not os.path.exists(disk_path):
             if self.disk_size:
                 log.info("disk {} not found. creating a new one, size {} Gb".format(disk_path, self.disk_size))
-                runcmd("sudo -u {} qemu-img create -f raw -o size={}G {}".format(
-                    cfg.kvm_user, self.disk_size, disk_path))
+                runcmd("sudo lvcreate -L {}GiB -n {} {}".format(self.disk_size, shortname, cfg.kvm_vg_name))
             else:
                 raise CrisidevException("--disk_size option required for new disks")
         else:
@@ -130,32 +130,12 @@ class CrisidevClusterInit(object):
             with open(filename, "w") as fd:
                 fd.write(render)
 
-    def _find_free_nbd(self, hostname):
-        log.info("searching for a free NBD device in the first 10")
-        for x in xrange(10):
-            r, o, e = runcmd("nbd-client -c /dev/ndb{}".format(x))
-            if r:
-                nbd = "/dev/nbd{}".format(x)
-                if nbd not in self.used_ndbs:
-                    self.used_ndbs.append(nbd)
-                    return nbd
-        raise CrisidevException("no free NBD device found")
-
-    def _mount_nbd(self, disk_path, nbd):
-        log.info("connecting {} to {}".format(disk_path, nbd))
-        r, o, e = runcmd("qemu-nbd -c {} {}".format(nbd, disk_path))
-        if r:
-            raise CrisidevException("unable to connect {} to {}".format(disk_path, nbd))
-
-    def _umount_nbd(self, nbd):
-        log.info("disconnecting {}".format(nbd))
-        runcmd("qemu-nbd -d {}".format(nbd))
-
     def _install_coreos(self):
         commands = []
+        log.info(self.config_dict)
         for key, value in self.config_dict.iteritems():
-            log.info("installing coreos on {}".format(value['nbd']))
-            commands.append("coreos-install -d {} -C {} -c {}".format(value['nbd'],
+            log.info("installing coreos on {}".format(value['disk']))
+            commands.append("coreos-install -v -d {} -C {} -c {}".format(value['disk'],
                             cfg.coreos_update_channel, value['tmpfile']))
         pool = Pool(len(self.dns_names))
         for i, retval in enumerate(pool.imap(partial(runcmd), commands)):
@@ -163,9 +143,8 @@ class CrisidevClusterInit(object):
                 log.error("%s command failed: %s" % (i, retval[2]))
 
     def _cleanup(self):
-        log.info("cleaning up used NBD devices")
+        log.info("cleaning up temporary files")
         for _, value in self.config_dict.iteritems():
-            self._umount_nbd(value['nbd'])
             if not self.dry_run:
                 os.remove(value['tmpfile'])
 
@@ -183,18 +162,10 @@ class CrisidevClusterInit(object):
                 tmpfile = tempfile.mktemp()
                 self.config_dict[hostname]['tmpfile'] = tmpfile
                 address = self.addresses[self.dns_names.index(hostname)]
-                if i == 0:
+                if i == 1:
                     enable_fleetui = True
                 self._write_temp_cloud_config(hostname, address, tmpfile, enable_fleetui)
-                disk_path = self._create_vbox_disk(hostname)
-                nbd = self._find_free_nbd(hostname)
-                self.config_dict[hostname]['nbd'] = nbd
-                try:
-                    self._mount_nbd(disk_path, nbd)
-                except CrisidevException as e:
-                    log.error(e)
-                    self._umount_nbd(nbd)
-                    self._mount_nbd(disk_path, nbd)
+                self.config_dict[hostname]['disk'] = self._create_vm_disk(hostname)
             if not self.dry_run:
                 self._install_coreos()
         except KeyboardInterrupt:

@@ -1,7 +1,0 @@
-#!/bin/sh
-WNAME="irssi"
-if ! tmux -L default attach-session -t ${WNAME}; then
-    tmux new-session -d -s ${WNAME} 'irssi'
-    tmux selectp -t 0
-    "${0}"
-fi

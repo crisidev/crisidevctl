@@ -301,17 +301,16 @@ then
 fi
 
 # inform the OS of partition table changes
-blockdev --rereadpt "${DEVICE}" || kpartx -a "${DEVICE}"
-trap "kpartx -d '${DEVICE}'" EXIT
+kpartx -a "${DEVICE}"
+trap 'kpartx -d "${DEVICE}"' EXIT
 
 if [[ -n "${CLOUDINIT}" ]] || [[ -n "${COPY_NET}" ]]; then
     # The ROOT partition should be #9 but make no assumptions here!
     # Also don't mount by label directly in case other devices conflict.
-    DEVICE_MAPPER="/dev/mapper/$(echo ${DEVICE} |sed 's/\/dev\///')"
-    ROOT_DEV=$(blkid -t "LABEL=ROOT" -o device "${DEVICE}"* || blkid -t "LABEL=ROOT" -o device "${DEVICE_MAPPER}"*) 
+    ROOT_DEV=$(blkid -t "LABEL=ROOT" -o device |grep "${DEVICE}")
 
     if [[ -z "${ROOT_DEV}" ]]; then
-	echo "Unable to find new ROOT partition on ${DEVICE}" >&2
+        echo "Unable to find new ROOT partition on ${DEVICE}" >&2
         exit 1
     fi
 

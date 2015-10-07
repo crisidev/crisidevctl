@@ -1,8 +1,14 @@
 {
     "dependencies": "etcdctl,fleetctl,iptables,nginx,ip",
     "coreos_update_channel": "beta",
+    "coreos_image": "/tmp/coreos_image",
+    "coreos_image_url": "http://repo.crisidev.org/coreos/coreos_production_image-beta.bin.bz2",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
     "nat_reserved_ports": {
+        "swarmirssi.crisidev.org": [
+            22,
+            21
+        ],
         "irssi.crisidev.org": [
             22,
             1022
@@ -30,10 +36,10 @@
     "etcd_host": "etcd.crisidev.org",
     "nginx_config_file": "/etc/nginx/sites-enabled/crisidev-{}",
     "etcd_dir_coreos_subnet": "/coreos.com/network/subnets",
-    "kvm_disk_path": "/crisidev-share/kvm/disks",
     "etcd_port": 4001,
     "firewall_template": "/etc/crisidev/firewall.tmpl",
     "kvm_user": "bigo",
+    "kvm_vg_name": "crisidev",
     "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
     "firewall_file_safe": "/etc/crisidev/firewall.safe",
     "etcd_dir_crisidev": "/crisidev",
