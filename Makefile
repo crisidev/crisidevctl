@@ -5,7 +5,7 @@ all: install
 install: copy-files
 
 copy-files:
-	sudo mkdir -p /$(CLUSTER)
+	sudo mkdir -p /etc/$(CLUSTER)
 	sudo cp ./files/crisidev/* /etc/$(CLUSTER)
 	sudo cp ./config.json /etc/$(CLUSTER)
 	sudo cp ./bin/coreos-install /usr/local/bin
