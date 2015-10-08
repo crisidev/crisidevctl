@@ -17,10 +17,6 @@ copy-files:
 
 install-go-bin:
 	mkdir -p $(HOME)/go
-	echo "alias ls='ls --color'" |tee -a $(HOME)/.bashrc
-	echo "export GOPATH=$$HOME/go" | tee -a $(HOME)/.bashrc
-	echo "export PATH=$$GOPATH/bin:$$PATH" | tee -a $(HOME)/.bashrc
-	alias ls="ls --color"
 	export GOPATH=$$HOME/go
 	export PATH=$$GOPATH/bin:$$PATH
 	go get -v github.com/coreos/etcdctl
