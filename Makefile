@@ -1,6 +1,6 @@
 .PHONY=all install
 
-all: install
+all: check-env install
 
 install: copy-files install-go-bin install-crisidevctl
 
@@ -28,3 +28,14 @@ install-go-bin:
 
 install-crisidevctl:
 	sudo python setup.py install
+
+check-env:
+	ifndef USERNAME
+		$(error USERNAME is undefined)
+	endif
+	ifndef CLUSTER
+		$(error CLUSTER is undefined)
+	endif
+	ifndef DOMAIN
+		$(error DOMAIN is undefined)
+	endif
