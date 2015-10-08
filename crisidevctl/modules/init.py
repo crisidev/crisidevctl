@@ -145,6 +145,7 @@ class CrisidevClusterInit(object):
     def _cleanup(self):
         log.info("cleaning up temporary files")
         for _, value in self.config_dict.iteritems():
+            runcmd("sudo kpartx -d {}".format(value['disk']))
             if not self.dry_run:
                 os.remove(value['tmpfile'])
 

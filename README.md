@@ -1,5 +1,28 @@
 # crisidev-cloud - scripts for my dev cloud
-## Installation
+A set of python / bash / golang tools to setup my own cloud.
+This is based on Debian, KVM, CoreOS, Docker and a huge list of other opensource software.
+
+**DISCLAIMER: USE AT YOUR OWN RISK, THIS IS MY PERSONAL SETUP, JUST MADE A LITTLE BIT GENERAL TO ALLOW PEOPLE TO PLAY WITH IT. IT IS PROBABLE YOU WILL HAVE TO DIG IN CODE / CONFIGS IF YOU USE THIS :)**
+
+## Table of contents
+* [crisidev-cloud - scripts for my dev cloud](#crisidev-cloud---scripts-for-my-dev-cloud)
+    * [DNS wildcard, cluster name and username](#dns-wildcard,-cluster-name-and-username)
+      * [Create source file](#create-source-file)
+    * [Install bare-metal host](#install-bare-metal-host)
+      * [The partition layer should follow this:](#the-partition-layer-should-follow-this:)
+      * [Prepare LVM and partitions](#prepare-lvm-and-partitions)
+      * [Setup permissions](#setup-permissions)
+      * [Setup hugepages](#setup-hugepages)
+      * [Install base system](#install-base-system)
+      * [Setup networking](#setup-networking)
+      * [Configure Hypervisor](#configure-hypervisor)
+      * [Setup nginx](#setup-nginx)
+    * [Install crisidevctl](#install-crisidevctl)
+    * [Install CoreOS VMs](#install-coreos-vms)
+      * [Configure VM disks](#configure-vm-disks)
+      * [Setup VMs](#setup-vms)
+    * [Run VMs](#run-vms)
+
 ### DNS wildcard, cluster name and username
 Point a DNS wildcard on you nameserver. The TLD will be your cluster name.
 * **DOMAIN:** blackmesalabs.it
@@ -47,7 +70,7 @@ $ export USERNAME=core
 $ groupadd -g 500 $USERNAME
 $ useradd --shell /bin/bash --home-dir /$CLUSTER-share -u 500 -g 500 -m $USERNAME
 $ passwd $USERNAME
-$ cp ~/.bashrc /$CLUSTER-share
+$ cp ~/.bashrc /$CLUSTER-share/.bash_profile
 $ chown -R $USERNAME:$USERNAME /$CLUSTER-share
 ```
 #### Setup hugepages
@@ -87,7 +110,7 @@ Setup /etc/resolv.conf
 ```sh
 domain $DOMAIN
 search $DOMAIN
-#nameserver 192.168.0.2
+nameserver 192.168.0.2
 nameserver 8.8.8.8
 ```
 #### Configure Hypervisor
@@ -99,15 +122,16 @@ $ chown -R $USERNAME:$USERNAME /var/lib/libvirt/qemu
 
 Change running user to $USERNAME in /etc/libvirt/qemu.conf
 ```sh
-...
-#       user = "100"    # A user named "100" or a user with uid=100
 user = "core"
-
-# The group for QEMU processes run by the system instance. It can be
-# specified in a similar way to user.
 ...
 ```
 
+Add $USERNAME to libvirt groups
+```sh
+$ adduser $USERNAME libvirt-qemu
+$ adduser $USERNAME libvirt
+$ adduser $USERNAME kvm
+```
 Restart libvirt
 ```sh
 $ systemctl start libvirtd.service
@@ -155,7 +179,35 @@ $ for x in node0 node1 node2; do
     --hvm --nographics --memballoon model=virtio --memorybacking hugepages=on \
     --filesystem /$CLUSTER-share,$CLUSTER-share --boot hd --noreboot
   done
-$ virsh -c qemu:///system list
 ```
+
+### Start CoreOS VMs
+```sh
+$ virsh start node0.$DOMAIN && virsh start node1.$DOMAIN && virsh start node2.$DOMAIN
+$ virsh list
+$ virsh console node0.$DOMAIN
+```
+#### Check cluster status
+If everything went fine we should be able to ping our new VMs
+```sh
+$ for x in 0 1 2; do ping -c2 -w1 node$x.$DOMAIN; done
+```
+Etcd2 should be up in a couple of minutes, and some other time is needed for DNS server and VMs layer 3 connectivity. Wait a bit and that check Etcd2
+```sh
+$ curl $(cat /etc/crisidev/etcd.key)
+$ dig @192.168.0.2 etcd.$DOMAIN
+$ etcdctl -C http://etcd.$DOMAIN:4001 ls --recursive
+$ ssh-add 
+$ ssh core@node0
+```
+
+
+
+
+
+
+
+
+
 
 
