@@ -30,12 +30,12 @@ install-crisidevctl:
 	sudo python setup.py install
 
 check-env:
-	ifndef USERNAME
-		$(error USERNAME is undefined)
-	endif
-	ifndef CLUSTER
-		$(error CLUSTER is undefined)
-	endif
-	ifndef DOMAIN
-		$(error DOMAIN is undefined)
-	endif
+ifndef USERNAME
+	$(error USERNAME is undefined)
+endif
+ifndef CLUSTER
+	$(error CLUSTER is undefined)
+endif
+ifndef DOMAIN
+	$(error DOMAIN is undefined)
+endif
