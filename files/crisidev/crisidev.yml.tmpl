@@ -95,7 +95,7 @@ coreos:
         What={{ cluster }}-share
         Where=/{{ cluster }}-share
         Type=9p
-        Options=trans=virtio,cache=mmap
+        Options=trans=virtio,cache=mmap,accessmode=mapped
 
         [Install]
         WantedBy=user-config.target
@@ -111,7 +111,7 @@ coreos:
         What=unsafe
         Where=/unsafe
         Type=9p
-        Options=trans=virtio,cache=mmap
+        Options=trans=virtio,cache=mmap,accessmode=mapped
 
         [Install]
         WantedBy=user-config.target
