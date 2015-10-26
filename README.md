@@ -6,33 +6,40 @@ This is based on Debian, KVM, CoreOS, Docker and a huge list of other opensource
 
 ## Table of contents
 * [crisidev-cloud - scripts for my dev cloud](#crisidev-cloud---scripts-for-my-dev-cloud)
-  * [DNS wildcard, cluster name and username](#dns-wildcard,-cluster-name-and-username)
-    * [Create source file](#create-source-file)
-  * [Install bare-metal host](#install-bare-metal-host)
-    * [The partition layer should follow this:](#the-partition-layer-should-follow-this:)
-    * [Prepare LVM and partitions](#prepare-lvm-and-partitions)
-    * [Setup permissions](#setup-permissions)
-    * [Setup hugepages](#setup-hugepages)
-    * [Install base system](#install-base-system)
-    * [Setup networking](#setup-networking)
-    * [Configure Hypervisor](#configure-hypervisor)
-    * [Setup nginx](#setup-nginx)
-  * [Install crisidevctl](#install-crisidevctl)
-  * [Install CoreOS VMs](#install-coreos-vms)
-    * [Configure VM disks](#configure-vm-disks)
-    * [Setup VMs](#setup-vms)
-  * [Start CoreOS VMs](#start-coreos-vms)
-    * [Check cluster status](#check-cluster-status)
-    * [Manual iptables / nginx / route update](#manual-iptables-/-nginx-/-route-update)
+    * [DNS wildcard, cluster name and username](#dns-wildcard,-cluster-name-and-username)
+      * [Create source file](#create-source-file)
+    * [Install bare-metal host](#install-bare-metal-host)
+      * [The partition layer should follow this:](#the-partition-layer-should-follow-this:)
+      * [Prepare LVM and partitions](#prepare-lvm-and-partitions)
+      * [Setup permissions](#setup-permissions)
+      * [Setup hugepages](#setup-hugepages)
+      * [Install base system](#install-base-system)
+      * [Setup networking](#setup-networking)
+      * [Configure Hypervisor](#configure-hypervisor)
+      * [Setup nginx](#setup-nginx)
+    * [Install crisidevctl](#install-crisidevctl)
+    * [Install CoreOS VMs](#install-coreos-vms)
+      * [Configure VM disks](#configure-vm-disks)
+      * [Setup VMs](#setup-vms)
+    * [Start CoreOS VMs](#start-coreos-vms)
+      * [Check cluster status](#check-cluster-status)
+      * [Manual iptables / nginx / route update](#manual-iptables-/-nginx-/-route-update)
+    * [Install mandatory services](#install-mandatory-services)
+      * [Service updater](#service-updater)
+      * [Docker registry (hub.$DOMAIN)](#docker-registry-(hub.$domain))
+      * [Git](#git)
+      * [Monitoring](#monitoring)
+        * [Prometheus](#prometheus)
+        * [Grafana](#grafana)
 
 ### DNS wildcard, cluster name and username
 Point a DNS wildcard on you nameserver. The TLD will be your cluster name.
 * **DOMAIN:** blackmesalabs.it
 * **CLUSTER:** blackmesalabs
-* **USENAME:** core 
+* **USENAME:** core
 
 #### Create source file
-Create a file to source from with env variables
+Create a file to source from with env variables (/etc/env)
 ```sh
 export DOMAIN=blackmesalabs.it
 export CLUSTER=blackmesalabs
@@ -44,7 +51,7 @@ Install debian-jessie on a bare-metal host with enough juice to run Virtual Mach
 #### The partition layer should follow this:
 * **/** On RAID 1 ~60Gb
 * Around 200Gb allocated into and LVM VG named $CLUSTER
-* **/$CLUSTER-share** On RAID 1, the remaining space 
+* **/$CLUSTER-share** On RAID 1, the remaining space
 
 Example for Etzner (you'll need to create the LVM by hand):
 ```sh
@@ -78,8 +85,7 @@ $ chown -R $USERNAME:$USERNAME /$CLUSTER-share
 #### Setup hugepages
 Export to sysctl how many hugepages you want to use for KVM. Calculation is max memory usable by VMs in Mb / 2
 ```sh
-vm.nr_hugepages = 5800
-vm.hugetlb_shm_group = 500
+vm.nr_hugepages = 5000
 ```
 **Reboot** to reserve that memory (see hugetlb)
 
@@ -103,7 +109,7 @@ iface br0 inet static
   address 192.168.0.1
   broadcast 192.168.0.255
   netmask 255.255.255.0
-  
+
 $ ifup br0
 ```
 Setup /etc/resolv.conf
@@ -125,7 +131,9 @@ Change hugetlb in /etc/libvirt/qemu.conf
 hugetlbfs_mount = "/dev/hugepages"
 ```
 
-Add $USERNAME to libvirt groups
+Edit /etc/libvirt/qemu.conf and set up user / group to root
+
+Add $USERNAME to groups
 ```sh
 $ adduser $USERNAME $USERNAME
 $ adduser $USERNAME sudo
@@ -159,7 +167,7 @@ $ systemctl start nginx.service
 $ su $USERNAME
 $ export USERNAME=core; export DOMAIN=blackmesalabs.it; export CLUSTER=blackmesalabs
 $ cd && git clone git://git.crisidev.org/crisidevctl && cd crisidevctl
-$ export GOPATH=$HOME/go 
+$ export GOPATH=$HOME/go
 $ export PATH=$GOPATH/bin:$PATH
 $ make # (this will install everythind run some commands as sudo)
 ```
@@ -169,7 +177,7 @@ $ make # (this will install everythind run some commands as sudo)
 ```sh
 $ ssh-keygen
 $ sudo crisidevctl init -k $HOME/.ssh/id_rsa.pub -K $HOME/.ssh/id_rsa -c /etc/crisidev/crisidev.yml.tmpl -n node0.$DOMAIN,node1.$DOMAIN,node2.$DOMAIN -a 192.168.0.2,192.168.0.3,192.168.0.4 -e -D 64 -d $DOMAIN -C $CLUSTER
-``` 
+```
 
 #### Setup VMs
 ```sh
@@ -198,8 +206,10 @@ Etcd2 should be up in a couple of minutes, and some other time is needed for DNS
 $ curl $(cat /etc/crisidev/etcd.key)
 $ dig @192.168.0.2 etcd.$DOMAIN
 $ etcdctl -C http://etcd.$DOMAIN:4001 ls --recursive
-$ ssh-add 
+$ ssh-add
 $ ssh core@node0
+$ fleetctl -endpoint http://etcd.$DOMAIN:4001 list-machines
+$ fleetctl -endpoint http://etcd.$DOMAIN:4001 list-unit-files
 ```
 
 #### Manual iptables / nginx / route update
@@ -210,3 +220,93 @@ $ sudo crisidevctl nat
 $ sudo crisidevctl proxy
 ```
 Go to https://fleeui.$DOMAIN
+
+### Install mandatory services
+Clone demo repository
+```sh
+git clone git://git.crisidev.org/demo-blackmesa
+```
+
+#### Service updater
+Enable crisidevctl service-updater
+```sh
+sudo systemctl enable crisidevctl
+sudo systemctl start crisidevctl
+```
+
+#### Docker registry (hub.$DOMAIN)
+SSH to all nodes
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-containers/registry
+docker build -t hub.blackmesalabs.it:5000/blackmesalabs/registry:2 .
+```
+
+Back on the bare-metal host
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-unitfiles
+fleetctl -endpoint http://etcd.$DOMAIN:4001 start hub.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 status hub.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 journal hub.blackmesalabs.it.service
+```
+
+#### Git
+Create git shared folder
+```sh
+mkdir /$CLUSTER-share/git
+```
+
+SSH to one node
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-containers/gitolite
+docker build -t hub.blackmesalabs.it:5000/blackmesalabs/gitolite .
+docker push hub.blackmesalabs.it:5000/blackmesalabs/gitolite
+```
+
+Back on the bare-metal host
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-unitfiles
+fleetctl -endpoint http://etcd.$DOMAIN:4001 start gitolite-init.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 journal -f gitolite-init.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 stop gitolite-init.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 destroy gitolite-init.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 start git.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 status git.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 journal -f git.blackmesalabs.it.service
+```
+
+#### Monitoring
+##### Prometheus
+SSH to one node
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-containers/prometheus
+docker build -t hub.blackmesalabs.it:5000/blackmesalabs/prometheus .
+docker push hub.blackmesalabs.it:5000/blackmesalabs/prometheus
+```
+
+Back on the bare-metal host
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-unitfiles
+fleetctl -endpoint http://etcd.$DOMAIN:4001 start prometheus.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 status prometheus.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 journal -f prometheus.blackmesalabs.it.service
+```
+
+Go to https://prometheus.$DOMAIN
+
+##### Grafana
+SSH to one node
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-containers/grafana
+docker build -t hub.blackmesalabs.it:5000/blackmesalabs/grafana .
+docker push hub.blackmesalabs.it:5000/blackmesalabs/grafana
+```
+
+Back on the bare-metal host
+```sh
+cd /$CLUSTER-share/demo-blackmesa/demo-unitfiles/grafana
+fleetctl -endpoint http://etcd.$DOMAIN:4001 start metrics.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 status metrics.blackmesalabs.it.service
+fleetctl -endpoint http://etcd.$DOMAIN:4001 journal -f metrics.blackmesalabs.it.service
+```
+
+Go to https://metrics.$DOMAIN
