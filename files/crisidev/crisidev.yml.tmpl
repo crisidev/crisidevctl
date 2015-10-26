@@ -19,7 +19,7 @@ coreos:
     public-ip: {{ address }}
     etcd_servers: "http://{{ address }}:4001"
     etcd-request-timeout: 15
-    metadata: "host={{ hostname }},hypervisor=kvm:libvirt,type={{ flavour }}"
+    metadata: "host={{ hostname }},hypervisor=kvm,type={{ flavour }}"
   units:
     - name: etcd2.service
       command: start
