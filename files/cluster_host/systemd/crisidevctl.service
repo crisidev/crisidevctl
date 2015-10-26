@@ -2,7 +2,7 @@
 Description=Crisidev Cloud Updater
 
 [Service]
-ExecStart=/usr/local/bin/etcdctl --endpoint http://etcd.DOMAIN:4001 exec-watch --recursive /CLUSTER -- \
+ExecStart=/usr/local/bin/etcdctl -C http://etcd.DOMAIN:4001 exec-watch --recursive /CLUSTER -- \
   sh -c '/usr/local/bin/crisidevctl nat; /usr/local/bin/crisidevctl proxy'
 Restart=always
 RestartSec=60s
