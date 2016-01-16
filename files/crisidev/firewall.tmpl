@@ -116,6 +116,10 @@ RETVAL=0
 {% for key, value in tcp.iteritems() %}{% for ports in value %}
 iptables -t nat -A PREROUTING -i eth0 -p tcp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
 RETVAL=$(expr ${RETVAL} + $?)
+{% if key == "git.crisidev.org"%}
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):22 -m comment --comment "{{ key }}"
+RETVAL=$(expr ${RETVAL} + $?)
+{% endif %}
 {% endfor %}{% endfor %}
 # UDP NAT
 {% for key, value in udp.iteritems() %}{% for ports in value %}

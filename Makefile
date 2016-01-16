@@ -19,9 +19,9 @@ install-go-bin:
 	mkdir -p $(HOME)/go
 	export GOPATH=$$HOME/go
 	export PATH=$$GOPATH/bin:$$PATH
-	go get -v github.com/coreos/etcdctl
+	go get -v github.com/coreos/etcd/etcdctl
 	go get -v github.com/coreos/fleet/fleetctl
-	go install -v github.com/coreos/etcdctl
+	go install -v github.com/coreos/etcd/etcdctl
 	go install -v github.com/coreos/fleet/fleetctl
 	sudo cp $$GOPATH/bin/etcdctl /usr/local/bin
 	sudo cp $$GOPATH/bin/fleetctl /usr/local/bin
