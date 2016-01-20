@@ -2,14 +2,14 @@
 
 all: check-env install
 
-install: copy-files install-go-bin install-crisidevctl
+install: copy-files install-crisidevctl
 
 copy-files:
 	sudo mkdir -p /etc/crisidev
 	sudo cp ./files/crisidev/* /etc/crisidev/
 	cat ./files/crisidev/nginx-http.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/crisidev/nginx-http.conf.tmpl
 	cat ./files/crisidev/nginx-https.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/crisidev/nginx-https.conf.tmpl
-	cat ./config.json |sed 's/USERNAME/$(USERNAME)/g' |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/crisidev/config.json
+	cat ./config.json |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/crisidev/config.json
 	sudo cp ./bin/coreos-install /usr/local/bin
 	echo "REMEMBER TO CHECK /etc/$(CLUSTER)/config.json"
 	cat ./files/cluster_host/nginx/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |sudo tee /etc/nginx/sites-enabled/unsecure
@@ -30,9 +30,6 @@ install-crisidevctl:
 	sudo python setup.py install
 
 check-env:
-ifndef USERNAME
-	$(error USERNAME is undefined)
-endif
 ifndef CLUSTER
 	$(error CLUSTER is undefined)
 endif

@@ -1,8 +1,6 @@
 {
     "dependencies": "etcdctl,fleetctl,iptables,nginx,ip",
     "coreos_update_channel": "beta",
-    "coreos_image": "/tmp/coreos_image",
-    "coreos_image_url": "http://repo.crisidev.org/coreos/coreos_production_image-beta.bin.bz2",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
     "nat_reserved_ports": {},
     "firewall_file": "/etc/crisidev/firewall",

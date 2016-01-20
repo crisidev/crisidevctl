@@ -125,8 +125,7 @@ class CrisidevClusterInit(object):
                                      etcd_key=self.etcd_key,
                                      password_hash=self.password_hash,
                                      ssh_public_key=self.ssh_public_key.strip("\n"),
-                                     ssh_private_key=self.ssh_private_key,
-                                     enable_fleetui=enable_fleetui)
+                                     ssh_private_key=self.ssh_private_key)
             with open(filename, "w") as fd:
                 fd.write(render)
 
@@ -156,16 +155,13 @@ class CrisidevClusterInit(object):
             if self.renew_etcd:
                 self._renew_etcd_key()
             self._read_etcd_key()
-            for i, hostname in enumerate(self.dns_names):
-                enable_fleetui = False
+            for hostname in self.dns_names:
                 self.config_dict[hostname] = {}
                 log.info("building VM image for {}".format(hostname))
                 tmpfile = tempfile.mktemp()
                 self.config_dict[hostname]['tmpfile'] = tmpfile
                 address = self.addresses[self.dns_names.index(hostname)]
-                if i == 1:
-                    enable_fleetui = True
-                self._write_temp_cloud_config(hostname, address, tmpfile, enable_fleetui)
+                self._write_temp_cloud_config(hostname, address, tmpfile)
                 self.config_dict[hostname]['disk'] = self._create_vm_disk(hostname)
             if not self.dry_run:
                 self._install_coreos()

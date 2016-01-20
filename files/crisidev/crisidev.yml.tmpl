@@ -142,127 +142,6 @@ coreos:
 
         [Install]
         WantedBy=user-config.target
-    - name: skydns.{{ domain }}.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=SkyDNS
-        After=cluster.service
-        Requires=cluster.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill skydns.{{ domain }}
-        ExecStartPre=-/usr/bin/docker rm skydns.{{ domain }}
-        ExecStartPre=-/usr/bin/docker pull skynetservices/skydns
-        ExecStartPre=-/usr/bin/etcdctl set /skydns/cluster/hosts/%m '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/docker run --rm --name skydns.{{ domain }} --net host -e PROMETHEUS_PORT=3000 skynetservices/skydns
-        ExecStop=/usr/bin/docker stop skydns.{{ domain }}
-
-        [Install]
-        WantedBy=user-config.target
-    - name: registrator.{{ domain }}.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=Registrator
-        After=skydns.{{ domain }}.service
-        Requires=skydns.{{ domain }}.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill registrator.{{ domain }}
-        ExecStartPre=-/usr/bin/docker rm registrator.{{ domain }}
-        ExecStartPre=-/usr/bin/docker pull gliderlabs/registrator
-        ExecStart=/usr/bin/docker run --rm --name registrator.{{ domain }} -v /var/run/docker.sock:/tmp/docker.sock \
-           gliderlabs/registrator -ttl 300 -ttl-refresh 280 -resync 600 -internal skydns2://{{ address }}:4001/{{ domain }}
-        ExecStop=/usr/bin/docker stop registrator.{{ domain }}
-
-        [Install]
-        WantedBy=user-config.target
-    - name: node_exporter.{{ domain }}.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=Prometheus Node Exporter
-        After=skydns.{{ domain }}.service
-        Requires=skydns.{{ domain }}.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill node_exporter.{{ domain }}
-        ExecStartPre=-/usr/bin/docker rm node_exporter.{{ domain }}
-        ExecStartPre=-/usr/bin/docker pull prom/node-exporter
-        ExecStart=/usr/bin/docker run --rm --name node_exporter.{{ domain }} --net="host" prom/node-exporter
-        ExecStop=/usr/bin/docker stop node_exporter.{{ domain }}
-
-        [Install]
-        WantedBy=user-config.target
-    - name: cadvisor.{{ domain }}.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=Cadvisor
-        After=registrator.{{ domain }}.service
-        Requires=registrator.{{ domain }}.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        EnvironmentFile=/etc/environment
-        ExecStartPre=-/usr/bin/docker kill cadvisor.{{ domain }}
-        ExecStartPre=-/usr/bin/docker rm cadvisor.{{ domain }}
-        ExecStartPre=-/usr/bin/docker pull google/cadvisor
-        ExecStart=/usr/bin/docker run --rm --name cadvisor.{{ domain }} -p 8080:8080 \
-           -e SERVICE_ID=cadvisor-${HNAME} -e SERVICE_NAME=cadvisor \
-           --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw \
-           --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
-           google/cadvisor
-        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }} '{"http":[8080]}'
-        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }}
-        ExecStop=/usr/bin/docker stop cadvisor.{{ domain }}
-
-        [Install]
-        WantedBy=user-config.target
-{% if enable_fleetui %}
-    - name: fleetui.{{ domain }}.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=FleetUI
-        After=cadvisor.{{ domain }}.service
-        Requires=cadvisor.{{ domain }}.service
-
-        [Service]
-        Restart=always
-        RestartSec=5
-        TimeoutStartSec=10m
-        ExecStartPre=-/usr/bin/docker kill fleetui.{{ domain }}
-        ExecStartPre=-/usr/bin/docker rm fleetui.{{ domain }}
-        ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
-        ExecStartPre=-/usr/bin/chown -R core:core /home/core
-        ExecStart=/usr/bin/docker run --rm --name fleetui.{{ domain }} --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
-          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.{{ domain }}:4001 \
-          purpleworks/fleet-ui
-        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/fleetui.{{ domain }} '{"https":[3000], "htaccess":"true"}'
-        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/fleetui.{{ domain }}
-        ExecStop=/usr/bin/docker stop fleetui.{{ domain }}
-
-        [Install]
-        WantedBy=user-config.target
-{% endif %}
     - name: install-toolbox.service
       command: start
       enable: true
@@ -287,6 +166,8 @@ coreos:
 write_files:
 - path: /etc/environment
   content: |
+    DOMAIN={{ domain }}
+    CLUSTER={{ cluster }}
     HOSTNAME={{ hostname }}
     HNAME={{ shortname }}
     IPADDR={{ address }}

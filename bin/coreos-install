@@ -261,7 +261,7 @@ fi
 IMAGE_URL="${BASE_URL}/${VERSION_ID}/${IMAGE_NAME}"
 SIG_NAME="${IMAGE_NAME}.sig"
 SIG_URL="${BASE_URL}/${VERSION_ID}/${SIG_NAME}"
-IMAGE_URL="http://repo.crisidev.org/coreos/coreos_production_image-${CHANNEL_ID}.bin.bz2"
+#IMAGE_URL="http://repo.crisidev.org/coreos/coreos_production_image-${CHANNEL_ID}.bin.bz2"
 
 if ! wget --inet4-only --spider --quiet "${IMAGE_URL}"; then
     echo "$0: Image URL unavailable: $IMAGE_URL" >&2
