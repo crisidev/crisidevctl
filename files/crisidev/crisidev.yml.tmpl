@@ -95,7 +95,7 @@ coreos:
         What={{ cluster }}-share
         Where=/{{ cluster }}-share
         Type=9p
-        Options=trans=virtio,cache=mmap,accessmode=mapped
+        Options=trans=virtio,cache=mmap,access=user
 
         [Install]
         WantedBy=user-config.target
@@ -111,7 +111,7 @@ coreos:
         What=unsafe
         Where=/unsafe
         Type=9p
-        Options=trans=virtio,cache=mmap,accessmode=mapped
+        Options=trans=virtio,cache=mmap,access=user
 
         [Install]
         WantedBy=user-config.target
@@ -130,14 +130,16 @@ coreos:
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/private
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
-        ExecStart=/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
-        ExecStart=/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/private-repo '{"host":"192.168.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "127.0.0.1"}'
-        ExecStart=/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/shuttle '{"host":"192.168.0.1"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hub '{"host":"192.168.0.1"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hubble '{"host":"172.16.0.2"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "127.0.0.1"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
         ExecStart=/usr/bin/systemctl stop update-engine.service
 
         [Install]
@@ -148,8 +150,8 @@ coreos:
       content: |
         [Unit]
         Description=Toolbox
-        After=skydns.{{ domain }}.service
-        Requires=skydns.{{ domain }}.service
+        After=cluster.service
+        Requires=cluster.service
 
         [Service]
         Type=oneshot

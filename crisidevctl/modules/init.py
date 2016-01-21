@@ -111,7 +111,7 @@ class CrisidevClusterInit(object):
         else:
             raise CrisidevException("ssh public key {} not found".format(self.ssh_pub_key))
 
-    def _write_temp_cloud_config(self, hostname, address, filename, enable_fleetui):
+    def _write_temp_cloud_config(self, hostname, address, filename):
         log.info("rendering cloud-config for {} to {}".format(hostname, filename))
         with open(self.cloud_config, "r") as fd:
             shortname = hostname.split(".")[0]
