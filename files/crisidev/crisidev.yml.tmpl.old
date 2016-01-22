@@ -1,0 +1,303 @@
+#cloud-config
+hostname: {{ hostname }}
+users:
+  - name: "core"
+    passwd: "{{ password_hash }}"
+    groups:
+      - "sudo"
+      - "docker"
+    ssh-authorized-keys:
+      - "{{ ssh_public_key }}"
+coreos:
+  etcd2:
+    discovery: "{{ etcd_key }}"
+    advertise-client-urls: "http://{{ address }}:2379"
+    initial-advertise-peer-urls: "http://{{ address }}:2380"
+    listen-client-urls: "http://0.0.0.0:2379,http://0.0.0.0:4001"
+    listen-peer-urls: "http://{{ address }}:2380,http://{{ address }}:7001"
+  fleet:
+    public-ip: {{ address }}
+    etcd_servers: "http://{{ address }}:4001"
+    etcd-request-timeout: 15
+    metadata: "host={{ hostname }},hypervisor=kvm,type={{ flavour }}"
+  units:
+    - name: etcd2.service
+      command: start
+    - name: flanneld.service
+      command: start
+      drop-ins:
+      - name: 50-network-config.conf
+        content: |
+          [Service]
+          ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"10.0.0.0/16","SubnetLen":24,"SubnetMin":"10.0.1.0","SubnetMax":"10.0.20.0"}'
+    - name: fleet.service
+      command: start
+    - name: docker-tcp.socket
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Docker Socket for the API
+
+        [Socket]
+        ListenStream=2375
+        Service=docker.service
+        BindIPv6Only=both
+
+        [Install]
+        WantedBy=sockets.target
+    - name: systemd-journal-gatewayd.socket
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Journal Gateway Service Socket
+
+        [Socket]
+        ListenStream=/var/run/journald.sock
+        Service=systemd-journal-gatewayd.service
+
+        [Install]
+        WantedBy=sockets.target
+    - name: 00-eth0.network
+      runtime: true
+      content: |
+        [Match]
+        Name=eth0
+
+        [Network]
+        DNS=127.0.0.1
+        DNS=8.8.8.8
+        Address={{ address }}/24
+        Gateway=192.168.0.1
+    - name: mkdir-{{ cluster }}-share.service
+      command: start
+      content: |
+        [Unit]
+        Description=Create the mount directory /{{ cluster }}-share and /unsafe
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/mkdir -p /{{ cluster }}-share
+        ExecStart=/usr/bin/mkdir -p /unsafe
+        ExecStart=/usr/bin/chown core:core /{{ cluster }}-share
+        ExecStart=/usr/bin/chown core:core /unsafe
+    - name: {{ cluster }}\x2dshare.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount {{ cluster }}-share onto /{{ cluster }}-share
+        Requires=mkdir-{{ cluster }}-share.service
+        After=mkdir-{{ cluster }}-share.service
+
+        [Mount]
+        What={{ cluster }}-share
+        Where=/{{ cluster }}-share
+        Type=9p
+        Options=trans=virtio,cache=mmap,accessmode=mapped
+
+        [Install]
+        WantedBy=user-config.target
+    - name: unsafe.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount unsafe onto /unsafe
+        Requires=mkdir-{{ cluster }}-share.service
+        After=mkdir-{{ cluster }}-share.service
+
+        [Mount]
+        What=unsafe
+        Where=/unsafe
+        Type=9p
+        Options=trans=virtio,cache=mmap,accessmode=mapped
+
+        [Install]
+        WantedBy=user-config.target
+    - name: cluster.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Initialise Cluster
+        After=flanneld.service
+        Requires=flanneld.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=-/usr/bin/etcdctl mkdir /skydns/{{ domain.split(".")[1] }}/{{ cluster }}
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/private
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
+        ExecStart=/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
+        ExecStart=/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/private-repo '{"host":"192.168.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "127.0.0.1"}'
+        ExecStart=/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
+        ExecStart=/usr/bin/systemctl stop update-engine.service
+
+        [Install]
+        WantedBy=user-config.target
+    - name: skydns.{{ domain }}.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=SkyDNS
+        After=cluster.service
+        Requires=cluster.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        ExecStartPre=-/usr/bin/docker kill skydns.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm skydns.{{ domain }}
+        ExecStartPre=-/usr/bin/docker pull skynetservices/skydns
+        ExecStartPre=-/usr/bin/etcdctl set /skydns/cluster/hosts/%m '{"host":"{{ address }}"}'
+        ExecStart=/usr/bin/docker run --rm --name skydns.{{ domain }} --net host -e PROMETHEUS_PORT=3000 skynetservices/skydns
+        ExecStop=/usr/bin/docker stop skydns.{{ domain }}
+
+        [Install]
+        WantedBy=user-config.target
+    - name: registrator.{{ domain }}.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Registrator
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        ExecStartPre=-/usr/bin/docker kill registrator.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm registrator.{{ domain }}
+        ExecStartPre=-/usr/bin/docker pull gliderlabs/registrator
+        ExecStart=/usr/bin/docker run --rm --name registrator.{{ domain }} -v /var/run/docker.sock:/tmp/docker.sock \
+           gliderlabs/registrator -ttl 300 -ttl-refresh 280 -resync 600 -internal skydns2://{{ address }}:4001/{{ domain }}
+        ExecStop=/usr/bin/docker stop registrator.{{ domain }}
+
+        [Install]
+        WantedBy=user-config.target
+    - name: node_exporter.{{ domain }}.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Prometheus Node Exporter
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        ExecStartPre=-/usr/bin/docker kill node_exporter.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm node_exporter.{{ domain }}
+        ExecStartPre=-/usr/bin/docker pull prom/node-exporter
+        ExecStart=/usr/bin/docker run --rm --name node_exporter.{{ domain }} --net="host" prom/node-exporter
+        ExecStop=/usr/bin/docker stop node_exporter.{{ domain }}
+
+        [Install]
+        WantedBy=user-config.target
+    - name: cadvisor.{{ domain }}.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Cadvisor
+        After=registrator.{{ domain }}.service
+        Requires=registrator.{{ domain }}.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        EnvironmentFile=/etc/environment
+        ExecStartPre=-/usr/bin/docker kill cadvisor.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm cadvisor.{{ domain }}
+        ExecStartPre=-/usr/bin/docker pull google/cadvisor
+        ExecStart=/usr/bin/docker run --rm --name cadvisor.{{ domain }} -p 8080:8080 \
+           -e SERVICE_ID=cadvisor-${HNAME} -e SERVICE_NAME=cadvisor \
+           --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw \
+           --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
+           google/cadvisor
+        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }} '{"http":[8080]}'
+        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/private/cadvisor-${HNAME}.cadvisor.{{ domain }}
+        ExecStop=/usr/bin/docker stop cadvisor.{{ domain }}
+
+        [Install]
+        WantedBy=user-config.target
+{% if enable_fleetui %}
+    - name: fleetui.{{ domain }}.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=FleetUI
+        After=cadvisor.{{ domain }}.service
+        Requires=cadvisor.{{ domain }}.service
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        TimeoutStartSec=10m
+        ExecStartPre=-/usr/bin/docker kill fleetui.{{ domain }}
+        ExecStartPre=-/usr/bin/docker rm fleetui.{{ domain }}
+        ExecStartPre=-/usr/bin/docker pull purpleworks/fleet-ui
+        ExecStartPre=-/usr/bin/chown -R core:core /home/core
+        ExecStart=/usr/bin/docker run --rm --name fleetui.{{ domain }} --expose 3000 -v /home/core/.ssh/id_rsa:/root/id_rsa \
+          -e SERVICE_ID=fleetui -e SERVICE_NAME=fleetui -e ETCD_PEER=http://etcd.{{ domain }}:4001 \
+          purpleworks/fleet-ui
+        ExecStartPost=-/usr/bin/etcdctl set /{{ cluster }}/fleetui.{{ domain }} '{"https":[3000], "htaccess":"true"}'
+        ExecStop=-/usr/bin/etcdctl rm /{{ cluster }}/fleetui.{{ domain }}
+        ExecStop=/usr/bin/docker stop fleetui.{{ domain }}
+
+        [Install]
+        WantedBy=user-config.target
+{% endif %}
+    - name: install-toolbox.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Toolbox
+        After=skydns.{{ domain }}.service
+        Requires=skydns.{{ domain }}.service
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=10m
+        ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox apt-get update"
+        ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox apt-get install -y htop iotop bmon dstat bash-completion wget"
+        ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox wget https://raw.githubusercontent.com/docker/docker/master/contrib/completion/bash/docker -O /usr/share/bash-completion/completions/docker"
+        ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox cp /usr/share/bash-completion /media/root/var/ -R"
+        ExecStart=/bin/bash -c "cd /home/core && cp /usr/share/skel/.bashrc .bashrc.new && mv .bashrc.new .bashrc"
+        ExecStart=/bin/bash -c "echo source /var/bash-completion/bash_completion >> /home/core/.bashrc"
+        ExecStartPost=/usr/bin/chown -R core:core /home/core
+  update:
+    reboot-strategy: 'off'
+write_files:
+- path: /etc/environment
+  content: |
+    HOSTNAME={{ hostname }}
+    HNAME={{ shortname }}
+    IPADDR={{ address }}
+- path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
+  content: |
+    [Service]
+    Environment='DOCKER_OPTS=--insecure-registry="192.168.0.0/24" --insecure-registry="10.0.0.0/16" --insecure-registry hub.{{ domain }}:5000 -dns {{ address }}'
+- path: /home/core/.ssh/id_rsa
+  content: |
+{{ ssh_private_key|indent(4, true) }}
+- path: /home/core/.toolboxrc
+  content: |
+    TOOLBOX_DOCKER_IMAGE=debian
+    TOOLBOX_DOCKER_TAG=jessie
