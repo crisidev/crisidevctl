@@ -132,6 +132,11 @@ coreos:
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
         ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
         ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx1 '{"host": "ASPMX.L.GOOGLE.COM", "mail": true, "priority": 1}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx2 '{"host": "ALT1.ASPMX.L.GOOGLE.COM", "mail": true, "priority": 2}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx3 '{"host": "ALT2.ASPMX.L.GOOGLE.COM", "mail": true, "priority": 3}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx4 '{"host": "ASPMX2.L.GOOGLE.COM", "mail": true, "priority": 4}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx5 '{"host": "ASPMX3.L.GOOGLE.COM", "mail": true, "priority": 5}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/repo '{"host":"192.168.0.1"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/shuttle '{"host":"192.168.0.1"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hub '{"host":"192.168.0.1"}'
