@@ -1,0 +1,16 @@
+[Unit]
+Description=Journal 2 Graylog
+After=systemd-journald.service
+Requires=systemd-journald.service
+
+[Service]
+ExecStart=/bin/sh -c "journalctl -o json -f | journal2gelf -s graylog.crisidev.org -p 12203"
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

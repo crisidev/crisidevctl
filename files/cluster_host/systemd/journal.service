@@ -1,10 +1,10 @@
 [Unit]
-Description=Papertrail
+Description=Journal 2 Graylog
 After=systemd-journald.service
 Requires=systemd-journald.service
 
 [Service]
-ExecStart=/bin/sh -c "journalctl -f | ncat --ssl logs3.papertrailapp.com 41473"
+ExecStart=/bin/sh -c "journalctl -o json -f | journal2gelf -s graylog.crisidev.org -p 12203"
 TimeoutStartSec=0
 Restart=on-failure
 RestartSec=5s
