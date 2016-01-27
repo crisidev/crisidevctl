@@ -1,5 +1,5 @@
 {
-    "dependencies": "etcdctl,fleetctl,iptables,nginx,ip",
+    "dependencies": "etcdctl,nginx",
     "coreos_update_channel": "beta",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
     "nat_reserved_ports": {},
