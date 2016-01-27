@@ -8,8 +8,8 @@ server {
     server_name {{ key }};
 
     ssl on;
-    ssl_certificate /CLUSTER-share/letsencrypt/live/DOMAIN/cert.pem;
-    ssl_certificate_key /CLUSTER-share/letsencrypt/live/DOMAIN/privkey.pem;
+    ssl_certificate /CLUSTER-share/letsencrypt/fullchain.pem;
+    ssl_certificate_key /CLUSTER-share/letsencrypt/privkey.pem;
     ssl_session_cache shared:SSL:10m;
     ssl_protocols SSLv3 TLSv1;
     ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
