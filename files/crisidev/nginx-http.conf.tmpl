@@ -13,7 +13,7 @@ server {
     chunked_transfer_encoding on;
 
     access_log syslog:server=graylog.DOMAIN:12301 graylog2_format;
-    error_log syslog:server=graylog.DOMAIN.org:12302;
+    error_log syslog:server=graylog.DOMAIN:12302;
 
     location / {
 {% if value['htaccess'] == "true" %}

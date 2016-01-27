@@ -54,6 +54,7 @@ class CrisidevClusterNat(object):
         return cfg.nat_port_mapping.get(str(port)) or port
 
     def _setup_port_mapping(self, hostname, ports):
+        self.used_ports = []
         mapping = []
         for port in ports:
             if hostname in cfg.nat_reserved_ports and cfg.nat_reserved_ports[hostname][0] == port:
