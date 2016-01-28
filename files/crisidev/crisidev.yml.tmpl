@@ -143,7 +143,7 @@ coreos:
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/hubble '{"host":"172.16.0.2"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
-        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "127.0.0.1"}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "192.168.0.1"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
         ExecStart=/usr/bin/systemctl stop update-engine.service
 
