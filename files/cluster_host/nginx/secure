@@ -28,6 +28,7 @@ server {
     ssl_prefer_server_ciphers on;
 
     location / {
+      set $ngo_whitelist "bigo@crisidev.org,cinziamarceddu@gmail.com";
       set $ngo_client_id "68200045974-hb6l14uctglq7m88dq27j7rsrat1ttl1.apps.googleusercontent.com";
       set $ngo_client_secret "2dMet4K56Hw-NMixkPByk0PG";
       set $ngo_token_secret "Aij2ees3Uirah5choh0jievae7een1chaebeu9suyo4ieb1uveijo3aicaex";

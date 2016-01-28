@@ -1,4 +1,5 @@
 {
+    "authorized_users": "bigo@crisidev.org,cinziamarceddu@gmail.com",
     "dependencies": "etcdctl,nginx",
     "coreos_update_channel": "beta",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
