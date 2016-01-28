@@ -25,8 +25,13 @@ server {
 
     location / {
 {% if value['htaccess'] == "true" %}
-        auth_basic            "Alt!";
-        auth_basic_user_file  /etc/nginx/ssl/htpasswd;
+        set $ngo_client_id "68200045974-hb6l14uctglq7m88dq27j7rsrat1ttl1.apps.googleusercontent.com";
+        set $ngo_client_secret "2dMet4K56Hw-NMixkPByk0PG";
+        set $ngo_token_secret "Aij2ees3Uirah5choh0jievae7een1chaebeu9suyo4ieb1uveijo3aicaex";
+        set $ngo_secure_cookies "true";
+        access_by_lua_file "/etc/nginx/nginx-google-oauth/access.lua";
+        header_filter_by_lua "ngx.header.content_length = nil";
+        body_filter_by_lua_file "/etc/nginx/nginx-google-oauth/body_filter.lua";
 {% endif %}
 {% if key == "plex.crisidev.org" %}
         if ($http_x_plex_device_name = '') {
