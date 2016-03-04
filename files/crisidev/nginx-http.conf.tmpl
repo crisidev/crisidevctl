@@ -12,19 +12,13 @@ server {
     client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
     chunked_transfer_encoding on;
 
-    access_log syslog:server=graylog.DOMAIN:12301 graylog2_format;
-    error_log syslog:server=graylog.DOMAIN:12302;
+    access_log /var/log/nginx/{{ key }}-ssl-access.log;
+    error_log /var/log/nginx/{{ key }}-ssl-error.log;
 
     location / {
 {% if value['htaccess'] == "true" %}
         auth_basic            "Alt!";
         auth_basic_user_file  /etc/nginx/ssl/htpasswd;
-{% endif %}
-{% if key == "plex.crisidev.org" %}
-        if ($http_x_plex_device_name = '') {
-            rewrite ^/$ https://$http_host/web/index.html;
-        }
-        proxy_redirect off;
 {% endif %}
         resolver etcd.DOMAIN;
         set $backend_upstream "http://{{ key }}:{{ port }}";
