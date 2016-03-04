@@ -1,5 +1,5 @@
 server {
-  listen   80;
+  listen 80;
   server_name repo.DOMAIN;
 
   location '/.well-known/acme-challenge' {
@@ -14,7 +14,7 @@ server {
 }
 
 server {
-  listen   80;
+  listen 80;
   server_name apt.DOMAIN;
 
   location '/.well-known/acme-challenge' {
@@ -29,8 +29,7 @@ server {
 }
 
 server {
-  listen   80;
-  server_name *;
+  listen 80 default;
 
   location '/.well-known/acme-challenge' {
     default_type "text/plain";
