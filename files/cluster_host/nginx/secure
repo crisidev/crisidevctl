@@ -11,7 +11,7 @@ server {
     ssl_prefer_server_ciphers on;
 
     location / {
-      root /crisidev-share/www/site;
+      root /CLUSTER-share/www/site;
     }
 }
 
@@ -28,7 +28,7 @@ server {
     ssl_prefer_server_ciphers on;
 
     location / {
-      root /crisidev-share/www/money;
+      root /CLUSTER-share/www/money;
       auth_basic            "Alt!";
       auth_basic_user_file  /etc/nginx/ssl/money;
     }
