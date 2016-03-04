@@ -1,11 +1,5 @@
 server {
   listen   80;
-  server_name DOMAIN www.DOMAIN;
-  return 301 https://$server_name$request_uri;
-}
-
-server {
-  listen   80;
   server_name repo.DOMAIN;
 
   location / {
@@ -26,6 +20,14 @@ server {
 
 server {
   listen   80;
-  server_name plex.DOMAIN;
-  return 301 https://$server_name$request_uri;
+  server_name *;
+
+  location '/.well-known/acme-challenge' {
+    default_type "text/plain";
+    root        /tmp/letsencrypt-auto;
+  }
+
+  location / {
+    return              301 https://$server_name$request_uri;
+  }
 }
