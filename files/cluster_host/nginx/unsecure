@@ -4,7 +4,7 @@ server {
 
   location '/.well-known/acme-challenge' {
     default_type "text/plain";
-    root        /CLUSTER-share/letsencrypt;
+    root        /CLUSTER-share/letsencrypt/webroot;
   }
 
   location / {
@@ -19,7 +19,7 @@ server {
 
   location '/.well-known/acme-challenge' {
     default_type "text/plain";
-    root        /CLUSTER-share/letsencrypt;
+    root        /CLUSTER-share/letsencrypt/webroot;
   }
 
   location / {
@@ -33,7 +33,7 @@ server {
 
   location '/.well-known/acme-challenge' {
     default_type "text/plain";
-    root        /CLUSTER-share/letsencrypt;
+    root        /CLUSTER-share/letsencrypt/webroot;
   }
 
   location / {
