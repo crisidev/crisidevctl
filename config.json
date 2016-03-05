@@ -1,25 +1,24 @@
 {
-    "authorized_users": "bigo@crisidev.org,cinziamarceddu@gmail.com",
-    "dependencies": "etcdctl,nginx",
+    "dependencies": "etcdctl,fleetctl,iptables,ip",
     "coreos_update_channel": "beta",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
     "nat_reserved_ports": {},
     "firewall_file": "/etc/crisidev/firewall",
     "kvm_bridge": "br0",
-    "etcd_host": "etcd.DOMAIN",
+    "etcd_host": "etcd.crisidev.org",
     "nginx_config_file": "/etc/nginx/sites-enabled/crisidev-{}",
     "etcd_dir_coreos_subnet": "/coreos.com/network/subnets",
     "etcd_port": 4001,
     "firewall_template": "/etc/crisidev/firewall.tmpl",
     "kvm_user": "USERNAME",
-    "kvm_vg_name": "CLUSTER",
+    "kvm_vg_name": "crisidev",
     "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
     "firewall_file_safe": "/etc/crisidev/firewall.safe",
-    "etcd_dir_crisidev": "/CLUSTER",
+    "etcd_dir_crisidev": "/crisidev",
     "nat_port_mapping": {
         "22": 1022,
-        "80": 8000,
-        "443": 9000
+        "80": 80,
+        "443": 443
     },
     "etcd_discovery": "https://discovery.etcd.io/new"
 }
