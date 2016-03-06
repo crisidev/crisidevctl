@@ -45,7 +45,7 @@ class CrisidevClusterProxy(object):
         log.info("rendering template {} on {}".format(nginx_template, tmp))
         with open(nginx_template, "r") as fd:
             template = Template(fd.read())
-            render = template.render(services=getattr(self, flavour),authorized_users=cfg.authorized_users)
+            render = template.render(services=getattr(self, flavour))
             with open(tmp, "w") as fd:
                 fd.write(render)
         log.info("moving {} to {}".format(tmp, nginx_config_file))
