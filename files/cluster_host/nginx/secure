@@ -1,6 +1,6 @@
 server {
     listen 443 ssl default;
-    server_name crisidev.org www.crisidev.org;
+    server_name DOMAIN www.DOMAIN;
 
     ssl on;
     ssl_certificate /CLUSTER-share/letsencrypt/fullchain.pem;
@@ -17,7 +17,7 @@ server {
 
 server {
     listen 443 ssl;
-    server_name money.crisidev.org;
+    server_name money.DOMAIN;
 
     ssl on;
     ssl_certificate /CLUSTER-share/letsencrypt/fullchain.pem;

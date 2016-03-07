@@ -23,8 +23,8 @@ server {
     #access_log /var/log/nginx/{{ key }}-ssl-access.log;
     #error_log /var/log/nginx/{{ key }}-ssl-error.log;
 
-    access_log syslog:server=graylog.$DOMAIN:12301 graylog2_format;
-    error_log syslog:server=graylog.$DOMAIN:12302;
+    access_log syslog:server=graylog.DOMAIN:12301 graylog2_format;
+    error_log syslog:server=graylog.DOMAIN:12302;
 
     location / {
 {% if value['htaccess'] == "true" %}
