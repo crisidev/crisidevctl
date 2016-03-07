@@ -16,6 +16,19 @@ copy-files:
 	cat ./files/cluster_host/nginx/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/unsecure
 	cat ./files/cluster_host/systemd/crisidevctl.service |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/systemd/system/crisidevctl.service
 
+install-fleet:
+	wget https://github.com/coreos/fleet/releases/download/v0.11.5/fleet-v0.11.5-linux-amd64.tar.gz -O /tmp/fleet.tar.gz
+	tar xfvz -C /tmp/fleet fleet.tar.gz
+	mv fleet/fleet* /usr/local/bin
+	rm -rf /tmp/fleet*
+
+install-etcd:
+	wget ttps://github.com/coreos/etcd/releases/download/v2.2.3/etcd-v2.2.3-linux-amd64.tar.gz -O /tmp/etcd.tar.gz
+	tar xfvz -C /tmp/etcd etcd.tar.gz
+	mv etcd/etcd* /usr/local/bin
+	rm -rf /tmp/etcd*
+
+
 install-go-bin:
 	mkdir -p $(HOME)/go
 	export GOPATH=$$HOME/go
