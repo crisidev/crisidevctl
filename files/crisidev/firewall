@@ -6,7 +6,7 @@ echo "Setting up firewall rules..."
 # Script variables
 #-------------------------------------------------------------------------------
 IF_WAN=eth0
-IF_BR={{ bridge }}
+IF_BR=br0
 IF_VPN=tun0
 #-------------------------------------------------------------------------------
 
@@ -113,19 +113,51 @@ iptables -t nat -A POSTROUTING -j MASQUERADE
 
 # TCP NAT
 RETVAL=0
-{% for key, value in tcp.iteritems() %}{% for ports in value %}
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short git.crisidev.org):22 -m comment --comment "git.crisidev.org"
 RETVAL=$(expr ${RETVAL} + $?)
-{% if key == "git.crisidev.org"%}
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):22 -m comment --comment "{{ key }}"
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to $(dig +time=2 +tries=1 +short git.crisidev.org):22 -m comment --comment "git.crisidev.org"
 RETVAL=$(expr ${RETVAL} + $?)
-{% endif %}
-{% endfor %}{% endfor %}
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to $(dig +time=2 +tries=1 +short nginx.crisidev.org):80 -m comment --comment "nginx.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short node3.crisidev.org):22 -m comment --comment "node3.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short irssi.crisidev.org):22 -m comment --comment "irssi.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short node1.crisidev.org):22 -m comment --comment "node1.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short node0.crisidev.org):22 -m comment --comment "node0.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 -j DNAT --to $(dig +time=2 +tries=1 +short sslh.crisidev.org):443 -m comment --comment "sslh.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 1022 -j DNAT --to $(dig +time=2 +tries=1 +short node2.crisidev.org):22 -m comment --comment "node2.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 7002 -j DNAT --to $(dig +time=2 +tries=1 +short znc.crisidev.org):7002 -m comment --comment "znc.crisidev.org"
+RETVAL=$(expr ${RETVAL} + $?)
+
+
 # UDP NAT
-{% for key, value in udp.iteritems() %}{% for ports in value %}
-iptables -t nat -A PREROUTING -i eth0 -p udp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
+
+iptables -t nat -A PREROUTING -i eth0 -p udp --dport 53 -j DNAT --to $(dig +time=2 +tries=1 +short iodine.crisidev.org):53 -m comment --comment "iodine.crisidev.org"
 RETVAL=$(expr ${RETVAL} + $?)
-{% endfor %}{% endfor %}
+
 
 echo "done."
 #-------------------------------------------------------------------------------
