@@ -12,9 +12,8 @@ copy-files:
 	cat ./config.json |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/crisidev/config.json
 	cp ./bin/coreos-install /usr/local/bin
 	echo "REMEMBER TO CHECK /etc/$(CLUSTER)/config.json"
-	cat ./files/cluster_host/nginx/secure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/secure
-	cat ./files/cluster_host/nginx/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/unsecure
-	cat ./files/cluster_host/systemd/crisidevctl.service |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/systemd/system/crisidevctl.service
+	cat ./files/crisidev/secure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/secure
+	cat ./files/crisidev/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/unsecure
 
 install-fleet:
 	wget https://github.com/coreos/fleet/releases/download/v0.11.5/fleet-v0.11.5-linux-amd64.tar.gz -O /tmp/fleet.tar.gz
@@ -27,18 +26,6 @@ install-etcd:
 	tar xfvz -C /tmp/etcd etcd.tar.gz
 	mv etcd/etcd* /usr/local/bin
 	rm -rf /tmp/etcd*
-
-
-install-go-bin:
-	mkdir -p $(HOME)/go
-	export GOPATH=$$HOME/go
-	export PATH=$$GOPATH/bin:$$PATH
-	go get -v github.com/coreos/etcd/etcdctl
-	go get -v github.com/coreos/fleet/fleetctl
-	go install -v github.com/coreos/etcd/etcdctl
-	go install -v github.com/coreos/fleet/fleetctl
-	cp $$GOPATH/bin/etcdctl /usr/local/bin
-	cp $$GOPATH/bin/fleetctl /usr/local/bin
 
 install-crisidevctl:
 	python setup.py install
