@@ -7,6 +7,7 @@ echo "Setting up firewall rules..."
 #-------------------------------------------------------------------------------
 IF_WAN=eth0
 IF_BR=br0
+IF_VPN=tun0
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -92,6 +93,7 @@ echo -ne "\t\tSetting up FILTER rules..."
 
 # from WAN to FW
 iptables -A INPUT -i $IF_BR -j ACCEPT
+iptables -A INPUT -i $IF_VPN -j ACCEPT
 iptables -A INPUT -i $IF_WAN -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i $IF_WAN -p tcp --dport 22 -j ACCEPT                           # ssh
 iptables -A INPUT -i $IF_WAN -p tcp --dport 80 -j ACCEPT                           # http

@@ -1,0 +1,9 @@
+[Unit]
+Description=Renew letsencrypt certificates
+
+[Timer]
+OnCalendar=monthly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -5,6 +5,7 @@ all: check-env install
 install: copy-files install-crisidevctl
 
 copy-files:
+	mkdir -p /etc/nginx/sites-enabled
 	mkdir -p /etc/crisidev
 	cp ./files/crisidev/* /etc/crisidev/
 	cat ./files/crisidev/nginx-http.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/crisidev/nginx-http.conf.tmpl

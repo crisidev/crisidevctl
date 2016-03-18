@@ -23,3 +23,18 @@ class CrisidevEtcd(object):
             raise CrisidevException("error reading etcd key, key not found")
         except EtcdConnectionFailed:
             raise CrisidevException("error reading etcd key, {} unreachable".format(cfg.etcd_host))
+
+    def read_single(self, path):
+        log.info("retrieving keys under {} from etcd".format(path))
+        try:
+            return self.client.get(path)
+        except EtcdKeyNotFound:
+            return []
+        except EtcdConnectionFailed:
+            raise CrisidevException("error reading etcd key, {} unreachable".format(cfg.etcd_host))
+
+    def write(self, path, content):
+        try:
+            self.client.write(path, content)
+        except EtcdConnectionFailed:
+            raise CrisidevException("error reading etcd key, {} unreachable".format(cfg.etcd_host))

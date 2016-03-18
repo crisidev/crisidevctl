@@ -1,7 +1,8 @@
 {
     "dependencies": "etcdctl,ip",
-    "coreos_update_channel": "beta",
+    "coreos_update_channel": "alpha",
     "etcd_keyfile": "/etc/crisidev/etcd.key",
+    "nat_reserved_ports": {},
     "firewall_file": "/etc/crisidev/firewall",
     "kvm_bridge": "br0",
     "etcd_host": "etcd.crisidev.org",
@@ -14,17 +15,10 @@
     "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
     "firewall_file_safe": "/etc/crisidev/firewall.safe",
     "etcd_dir_crisidev": "/crisidev",
-    "etcd_gorb_lbs_path": "/crisidev/gorb/lbs",
-    "nat_reserved_ports": {
-        "22/tcp": "1022/tcp",
-        "80/tcp": "80/tcp",
-        "443/tcp": "443/tcp"
+    "nat_port_mapping": {
+        "22": 1022,
+        "80": 80,
+        "443": 443
     },
-    "etcd_discovery": "https://discovery.etcd.io/new",
-    "gorb_endpoint": "http://localhost:4672/service",
-    "gorb_unit_file": "gorb.crisidev.org.service",
-    "gorb_default_lb_vip": "",
-    "gorb_default_lb_persistent": true,
-    "gorb_default_lb_method": "wlc",
-    "gorb_default_backend_method": "nat"
+    "etcd_discovery": "https://discovery.etcd.io/new"
 }

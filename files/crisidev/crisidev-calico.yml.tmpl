@@ -23,15 +23,27 @@ coreos:
   units:
     - name: etcd2.service
       command: start
-    - name: flanneld.service
-      command: start
-      drop-ins:
-      - name: 50-network-config.conf
-        content: |
-          [Service]
-          ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"10.0.0.0/16","SubnetLen":24,"SubnetMin":"10.0.1.0","SubnetMax":"10.0.20.0"}'
     - name: fleet.service
       command: start
+    - name: docker.service
+      command: restart
+      content: |-
+        [Unit]
+        Description=Docker Application Container Engine
+        After=docker.socket early-docker.target network.target
+        Requires=docker.socket early-docker.target
+
+        [Service]
+        Environment=TMPDIR=/var/tmp
+        MountFlags=slave
+        LimitNOFILE=1048576
+        LimitNPROC=1048576
+        ExecStart=/usr/bin/docker daemon --cluster-store=etcd://{{ address }}:2379 --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+        RestartSec=10
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
     - name: docker-tcp.socket
       command: start
       enable: true
@@ -121,17 +133,19 @@ coreos:
       content: |
         [Unit]
         Description=Initialise Cluster
-        After=flanneld.service
-        Requires=flanneld.service
+        After=fleet.service
+        Requires=fleet.service
 
         [Service]
         Type=oneshot
+        ExecStart=/home/core/add_path.sh
+        ExecStart=/home/core/get_calicoctl.sh
         ExecStart=-/usr/bin/etcdctl mkdir /skydns/{{ domain.split(".")[1] }}/{{ cluster }}
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/private
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
-        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/gorb
-        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"gorb": {"lb_ports": ["22/tcp"], "backend_ports": ["22/tcp"], "lb_method": "lc", "backend_method": "nat", "persistent": true}}'
-        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"nginx": {"https":[8080],"htaccess":"true"}}'
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"tcp":[22]}'
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"https":[8080],"htaccess":"true"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx1 '{"host": "ASPMX.L.GOOGLE.COM", "mail": true, "priority": 1}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx2 '{"host": "ALT1.ASPMX.L.GOOGLE.COM", "mail": true, "priority": 2}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx3 '{"host": "ALT2.ASPMX.L.GOOGLE.COM", "mail": true, "priority": 3}'
@@ -144,7 +158,7 @@ coreos:
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/gotty '{"host": "192.168.0.1"}'
-        ExecStart=-/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'
+        ExecStart=-/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.12:2379","http://192.168.0.13:2379","http://192.168.0.14:2379"],"discover":true}'
         ExecStart=/usr/bin/systemctl stop update-engine.service
 
         [Install]
@@ -165,7 +179,6 @@ coreos:
         ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox apt-get install -y htop iotop bmon dstat bash-completion wget"
         ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox wget https://raw.githubusercontent.com/docker/docker/master/contrib/completion/bash/docker -O /usr/share/bash-completion/completions/docker"
         ExecStartPre=/usr/bin/su core -c "/usr/bin/toolbox cp /usr/share/bash-completion /media/root/var/ -R"
-        ExecStart=/bin/bash -c "cd /home/core && cp /usr/share/skel/.bashrc .bashrc.new && mv .bashrc.new .bashrc"
         ExecStart=/bin/bash -c "echo source /var/bash-completion/bash_completion >> /home/core/.bashrc"
         ExecStartPost=/usr/bin/chown -R core:core /home/core
   update:
@@ -189,3 +202,22 @@ write_files:
   content: |
     TOOLBOX_DOCKER_IMAGE=debian
     TOOLBOX_DOCKER_TAG=jessie
+- path: /home/core/add_path.sh
+  permissions: 777
+  owner: root
+  content: |
+    #!/usr/bin/bash -e
+    # Add /opt/bin to the _front_ of the PATH.
+    # Can't directly write to .profile since it's a symlink to a RO filesystem
+    mkdir -p /opt/bin
+    rm /home/core/.bashrc
+    echo 'PATH=$PATH:/opt/bin' > /home/core/.bashrc
+    echo 'export ETCD_AUTHORITY="{{ address }}:2379"' >> /home/core/.bashrc
+    echo 'Defaults env_keep +="ETCD_AUTHORITY"' >> /etc/sudoers.d/etcd
+- path: /home/core/get_calicoctl.sh
+  permissions: 777
+  owner: root
+  content: |
+    #!/usr/bin/bash -e
+    wget -O /opt/bin/calicoctl http://www.projectcalico.org/builds/calicoctl
+    chmod +x /opt/bin/calicoctl

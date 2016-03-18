@@ -8,7 +8,7 @@ from .shell import which
 from .modules.init import CrisidevClusterInit
 from .modules.install import CrisidevClusterInstall
 from .modules.route import CrisidevClusterRoute
-from .modules.nat import CrisidevClusterNat
+from .modules.lb import CrisidevClusterLB
 from .modules.proxy import CrisidevClusterProxy
 
 
@@ -24,7 +24,7 @@ Commands:
    install          Install required files on the host machine
    init             Initialise VMs images for a new cluster
    route            Routes VMs subnet to allow inbound traffic
-   nat              NAT containers tcp/udp ports on the public ip address
+   lb               LB containers tcp/udp ports on the public ip address
    proxy            Proxy containers http ports using nginx
 
 """)
@@ -94,16 +94,18 @@ Commands:
         args = parser.parse_args(sys.argv[2:])
         return CrisidevClusterRoute(args)
 
-    def nat(self):
+    def lb(self):
         parser = argparse.ArgumentParser(prog=sys.argv[1],
-                                         description="NAT tcp/udp containers ports on the public static ip")
+                                         description="LB tcp/udp containers ports on the public static ip")
         # prefixing the argument with -- means it's optional
+        parser.add_argument("-c", "--cleanup", dest="cleanup", required=False,
+                            action="store_true", help="Cleanup LB")
         parser.add_argument("-e", "--etcd_dir", dest="etcd_dir", required=False,
                             help="Etcd dir to read from")
         parser.add_argument("-b", "--bridge", dest="bridge", required=False,
                             help="Bridge used by virtualbox (ex: br0)")
         args = parser.parse_args(sys.argv[2:])
-        return CrisidevClusterNat(args)
+        return CrisidevClusterLB(args)
 
     def proxy(self):
         parser = argparse.ArgumentParser(prog=sys.argv[1], description="Proxy containers http ports using nginx")

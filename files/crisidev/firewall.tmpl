@@ -99,7 +99,18 @@ iptables -A INPUT -i $IF_WAN -p tcp --dport 22 -j ACCEPT                        
 iptables -A INPUT -i $IF_WAN -p tcp --dport 80 -j ACCEPT                           # http
 iptables -A INPUT -i $IF_WAN -p tcp --dport 443 -j ACCEPT                          # https
 iptables -A INPUT -i $IF_WAN -p tcp --dport 655 -j ACCEPT                          # tinc
-#iptables -A INPUT -i $IF_WAN -p tcp --dport 7002 -j ACCEPT                          # znc
+
+# TCP INPUT
+RETVAL=0
+{% for key, value in tcp.iteritems() %}{% for ports in value %}
+iptables -A INPUT -p tcp --dport {{ ports[1] }} -j ACCEPT -m comment --comment "{{ key }}"
+RETVAL=$(expr ${RETVAL} + $?)
+{% endfor %}{% endfor %}
+# UDP INPUT
+{% for key, value in udp.iteritems() %}{% for ports in value %}
+iptables -A INPUT -p udp --dport {{ ports[1] }} -j ACCEPT -m comment --comment "{{ key }}"
+RETVAL=$(expr ${RETVAL} + $?)
+{% endfor %}{% endfor %}
 
 echo "done."
 #-------------------------------------------------------------------------------
@@ -110,22 +121,6 @@ echo "done."
 echo -ne "\t\tSetting up NAT rules..."
 
 iptables -t nat -A POSTROUTING -j MASQUERADE
-
-# TCP NAT
-RETVAL=0
-{% for key, value in tcp.iteritems() %}{% for ports in value %}
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
-RETVAL=$(expr ${RETVAL} + $?)
-{% if key == "git.crisidev.org"%}
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):22 -m comment --comment "{{ key }}"
-RETVAL=$(expr ${RETVAL} + $?)
-{% endif %}
-{% endfor %}{% endfor %}
-# UDP NAT
-{% for key, value in udp.iteritems() %}{% for ports in value %}
-iptables -t nat -A PREROUTING -i eth0 -p udp --dport {{ ports[1] }} -j DNAT --to $(dig +time=2 +tries=1 +short {{ key }}):{{ ports[0] }} -m comment --comment "{{ key }}"
-RETVAL=$(expr ${RETVAL} + $?)
-{% endfor %}{% endfor %}
 
 echo "done."
 #-------------------------------------------------------------------------------
