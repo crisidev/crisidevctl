@@ -42,7 +42,7 @@ server {
 server {
   listen 80;
   server_name *.nginx.crisidev.org;
-  server_name localhost
+  server_name localhost;
 
   location '/.well-known/acme-challenge' {
     default_type "text/plain";
