@@ -28,7 +28,7 @@ class CrisidevClusterLB(object):
         self.keys = None
         self.tcp = {}
         self.udp = {}
-        self.gorb = collections.OrderedDict()
+        self.gorb = {}
         self.used_ports = []
         self.used_lbs = []
         self.former_used_lbs = []
@@ -50,19 +50,14 @@ class CrisidevClusterLB(object):
             try:
                 if key.value:
                     k = key.key.split("/")[2]
-                    print key.value
                     v = json.loads(key.value)
                     if v.get('gorb'):
-                        lb, backends = self._setup_gorb_mapping(k, v.get('gorb'))
-                        self.gorb[k] = {
-                            'lb': lb,
-                            'backends': backends
-                        }
+                        self._setup_gorb_mapping(k, v.get('gorb'))
             except IndexError:
                 break
         log.info("gorb mapping: " + pformat(self.gorb))
-        log.info("iptables tcp mapping: {}".format(self.tcp))
-        log.info("iptables udp mapping: {}".format(self.udp))
+        #log.info("iptables tcp mapping: {}".format(self.tcp))
+        #log.info("iptables udp mapping: {}".format(self.udp))
         self._read_used_lbs_on_etcd()
 
     def _write_used_lbs_on_etcd(self):
@@ -84,10 +79,10 @@ class CrisidevClusterLB(object):
 
     def _setup_gorb_mapping(self, hostname, gorb):
         lb_mapping = {}
-        backend_mapping = []
         self.tcp[hostname] = []
         self.udp[hostname] = []
         for count, lb_port in enumerate(gorb['lb_ports']):
+            backend_mapping = []
             if lb_port in cfg.nat_reserved_ports:
                 lb_port = cfg.nat_reserved_ports[lb_port]
             port, proto = lb_port.split('/')
@@ -123,8 +118,12 @@ class CrisidevClusterLB(object):
                 self.tcp[hostname].append((backend_port, port))
             if proto == "udp":
                 self.udp[hostname].append((backend_port, port))
-        self._add_lb_to_used_lbs(hostname)
-        return lb_mapping, backend_mapping
+            lb_name = "{}-{}".format(hostname, port)
+            self._add_lb_to_used_lbs(lb_name)
+            self.gorb[lb_name] = {
+                "lb": lb_mapping,
+                "backends": backend_mapping
+            }
 
     def _cleanup_gorb(self):
         lbs_to_cleanup = set(self.former_used_lbs).difference(self.used_lbs)
@@ -139,54 +138,52 @@ class CrisidevClusterLB(object):
 
     def _update_gorb(self):
         self._cleanup_gorb()
-        for lb, value in sorted(self.gorb.iteritems()):
-            status_code, response = self._get(lb)
+        for lb_name, value in sorted(self.gorb.iteritems()):
+            status_code, response = self._get(lb_name)
             if status_code == 404:
-                log.info("creating service {}".format(lb))
-                self._put(lb, value['lb'])
-            elif response['options']['host'] != value['lb']['host'] or \
-                    response['options']['port'] != value['lb']['port'] or \
-                    response['options']['protocol'] != value['lb']['protocol'] or \
-                    response['options']['persistent'] != value['lb']['persistent'] or \
-                    response['options']['method'] != value['lb']['method']:
-                log.info("updating service {}".format(lb))
-                # log.warn("host: {} {}".format(response['options']['host'], value['lb']['host']))
-                # log.warn("port: {} {}".format(response['options']['port'], value['lb']['port']))
-                # log.warn("proto: {} {}".format(response['options']['protocol'], value['lb']['protocol']))
-                # log.warn("persistent: {} {}".format(response['options']['persistent'], value['lb']['persistent']))
-                # log.warn("method: {} {}".format(response['options']['method'], value['lb']['method']))
-                self._delete(lb)
-                time.sleep(10)
-                self._put(lb, value['lb'])
-            for backend in value['backends']:
-                service = "{}/{}".format(lb, backend['host'])
-                status_code, response = self._get(service)
+                log.info("creating lb {}, method".format(lb_name, value['lb']['method']))
+                self._put(lb_name, value["lb"])
+            elif response['options']['host'] != value["lb"]['host'] or response['options']['port'] != value["lb"]['port'] or \
+                    response['options']['protocol'] != value["lb"]['protocol'] or response['options']['persistent'] != value["lb"]['persistent'] or \
+                    response['options']['method'] != value["lb"]['method']:
+                log.info("updating lb {}".format(lb_name))
+                self._delete(lb_name)
+                time.sleep(1)
+                self._put(lb_name, value["lb"])
+            for backend in value["backends"]:
+                backend_name = "{}/{}-{}".format(lb_name, backend.get("host"), value["lb"]['port'])
+                status_code, response = self._get(backend_name)
                 if status_code == 404:
-                    log.info("creating backend {} for {}".format(backend['host'], lb))
-                    self._put(service, backend)
-                elif response['options']['host'] != backend['host'] or \
-                        response['options']['port'] != backend['port'] or \
+                    log.info("creating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
+                    self._put(backend_name, backend)
+                elif response['options']['host'] != backend['host'] or response['options']['port'] != backend['port'] or \
                         response['options']['method'] != backend['method']:
-                    log.info("updating backend {} for {}".format(backend['host'], lb))
-                    self._delete(service)
-                    time.sleep(10)
-                    self._put(service, backend)
+                    if "nginx.crisidev.org" in lb_name:
+                        print lb_name
+                        print response['options']['host'], backend['host']
+                        print response['options']['port'], backend['port']
+                        print response['options']['method'], backend['method']
+                    log.info("updating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
+                    self._delete(backend_name)
+                    time.sleep(1)
+                    self._put(backend_name, backend)
 
     def _get(self, service):
         r = requests.get("{}/{}".format(cfg.gorb_endpoint, service), headers=self.header)
-        log.info("get {}/{}: {}".format(cfg.gorb_endpoint, service, r.status_code))
+        if not r.status_code in (200, 404):
+            log.error("requests get error: {} ".format(r.status_code))
         return r.status_code, r.json()
 
     def _delete(self, service):
         r = requests.delete("{}/{}".format(cfg.gorb_endpoint, service), headers=self.header)
-        log.info("delete {}/{}: {}".format(cfg.gorb_endpoint, service, r.status_code))
+        if not r.status_code in (200, 404):
+            log.error("requests delete: {} ".format(r.status_code))
         return r.status_code
 
     def _put(self, service, content):
         r = requests.put("{}/{}".format(cfg.gorb_endpoint, service), data=json.dumps(content), headers=self.header)
-        log.info("put {}/{}: {}".format(cfg.gorb_endpoint, service, r.status_code))
         if r.status_code != 200:
-            log.error("put error: {}\n".format(r.status_code) + pformat(content))
+            log.error("requests put error: {} ".format(r.status_code) + pformat(content))
         return r.status_code
 
     def _patch(self, service, content):

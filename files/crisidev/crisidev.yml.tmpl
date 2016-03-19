@@ -129,8 +129,8 @@ coreos:
         ExecStart=-/usr/bin/etcdctl mkdir /skydns/{{ domain.split(".")[1] }}/{{ cluster }}
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/opus
-        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/gorb
-        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"gorb": {"lb_ports": ["22/tcp"], "backend_ports": ["22/tcp"], "lb_method": "lc", "backend_method": "nat", "persistent": true}}'
+        ExecStart=-/usr/bin/etcdctl mkdir /gorb
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ hostname }} '{"gorb": {"lb_ports": ["22/tcp"], "backend_ports": ["22/tcp"], "persistent": false}}'
         ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/gotty.{{ domain }} '{"nginx": {"https":[8080],"htaccess":"true"}}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx1 '{"host": "ASPMX.L.GOOGLE.COM", "mail": true, "priority": 1}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/mx2 '{"host": "ALT1.ASPMX.L.GOOGLE.COM", "mail": true, "priority": 2}'
