@@ -128,7 +128,9 @@ coreos:
         Type=oneshot
         ExecStart=-/usr/bin/etcdctl mkdir /skydns/{{ domain.split(".")[1] }}/{{ cluster }}
         ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/services
+        ExecStart=-/usr/bin/etcdctl mkdir /{{ cluster }}/prometheus
         ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/services/{{ hostname }} '{"gorb": {"lb_ports": ["22/tcp"], "backend_ports": ["22/tcp"], "persistent": false}}'
+        ExecStart=-/usr/bin/etcdctl set /{{ cluster }}/{{ shortname }}.etcd.{{cluster}} '4001'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/{{ domain.split(".")[1] }}/{{ cluster }}/etcd/{{ shortname }} '{"host":"{{ address }}"}'
         ExecStart=-/usr/bin/etcdctl set /skydns/config '{"domain":"{{ domain }}","dns_addr":"0.0.0.0:53","nameservers":["8.8.8.8:53","8.8.4.4:53"],"machines":["http://192.168.0.2:2379","http://192.168.0.3:2379","http://192.168.0.4:2379"],"discover":true}'

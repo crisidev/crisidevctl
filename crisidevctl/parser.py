@@ -10,6 +10,7 @@ from .modules.install import CrisidevClusterInstall
 from .modules.route import CrisidevClusterRoute
 from .modules.lb import CrisidevClusterLB
 from .modules.proxy import CrisidevClusterProxy
+from .modules.prom import CrisidevClusterProm
 
 
 class CrisidevCtl(object):
@@ -26,6 +27,7 @@ Commands:
    route            Routes VMs subnet to allow inbound traffic
    lb               LB containers tcp/udp ports on the public ip address
    proxy            Proxy containers http ports using nginx
+   prometheus       Setup prometheus targets for monitoring
 
 """)
         parser.add_argument("command", help="Subcommand to run")
@@ -114,3 +116,13 @@ Commands:
                             help="Etcd dir to read from")
         args = parser.parse_args(sys.argv[2:])
         return CrisidevClusterProxy(args)
+
+    def prom(self):
+        parser = argparse.ArgumentParser(prog=sys.argv[1], description="Setup prometheus targets for monitoring")
+        # prefixing the argument with -- means it's optiona
+        parser.add_argument("-e", "--etcd_dir", dest="etcd_dir", required=False,
+                            help="Etcd dir to read from")
+        parser.add_argument("-p", "--prom_file", dest="prom_file", required=False,
+                            help="Prometheus targets file")
+        args = parser.parse_args(sys.argv[2:])
+        return CrisidevClusterProm(args)
