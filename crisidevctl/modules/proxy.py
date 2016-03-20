@@ -36,7 +36,7 @@ class CrisidevClusterProxy(object):
                     v = v .get('nginx')
                     if v:
                         if v.get(flavour):
-                            k = key.key.split("/")[2]
+                            k = key.key.split("/")[-1]
                             service_dict[k] = {"ports": v.get(flavour), "htaccess": v.get("htaccess")}
         log.info("{} mapping: {}".format(flavour, service_dict))
         setattr(self, flavour, service_dict)
