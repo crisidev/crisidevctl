@@ -49,13 +49,13 @@ class CrisidevClusterLB(object):
         for key in self.keys:
             try:
                 if key.value:
-                    k = key.key.split("/")[2]
+                    k = key.key.split("/")[-1]
                     v = json.loads(key.value)
                     if v.get('gorb'):
                         self._setup_gorb_mapping(k, v.get('gorb'))
             except IndexError:
                 break
-        #log.info("gorb mapping: " + pformat(self.gorb_status))
+        # log.info("gorb mapping: " + pformat(self.gorb_status))
         #log.info("iptables tcp mapping: {}".format(self.tcp))
         #log.info("iptables udp mapping: {}".format(self.udp))
         self._read_gorb_status_from_etcd()
@@ -164,11 +164,6 @@ class CrisidevClusterLB(object):
                     self._put(backend_name, backend)
                 elif response['options']['host'] != backend['host'] or response['options']['port'] != backend['port'] or \
                         response['options']['method'] != backend['method']:
-                    if "nginx.crisidev.org" in lb_name:
-                        print lb_name
-                        print response['options']['host'], backend['host']
-                        print response['options']['port'], backend['port']
-                        print response['options']['method'], backend['method']
                     log.info("updating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
                     self._patch(backend_name, backend)
         self._write_gorb_status_on_etcd()
