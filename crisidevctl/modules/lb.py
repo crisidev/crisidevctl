@@ -28,10 +28,10 @@ class CrisidevClusterLB(object):
         self.keys = None
         self.tcp = {}
         self.udp = {}
-        self.gorb = {}
         self.used_ports = []
-        self.used_lbs = []
-        self.former_used_lbs = []
+        self.gorb_status = {}
+        self.gorb_former_status = {}
+        self.gorb_to_remove = {}
         self.header = {"content-type": "application/json"}
         self.etcd_dir = args.etcd_dir or cfg.etcd_dir_crisidev
         self.bridge = args.bridge or cfg.kvm_bridge
@@ -55,27 +55,24 @@ class CrisidevClusterLB(object):
                         self._setup_gorb_mapping(k, v.get('gorb'))
             except IndexError:
                 break
-        log.info("gorb mapping: " + pformat(self.gorb))
+        #log.info("gorb mapping: " + pformat(self.gorb_status))
         #log.info("iptables tcp mapping: {}".format(self.tcp))
         #log.info("iptables udp mapping: {}".format(self.udp))
-        self._read_used_lbs_on_etcd()
+        self._read_gorb_status_from_etcd()
 
-    def _write_used_lbs_on_etcd(self):
-        log.info("gorb used lbs: {}".format(self.used_lbs))
-        self.etcd.write(cfg.etcd_gorb_lbs_path, self.used_lbs)
+    def _write_gorb_status_on_etcd(self):
+        log.info("gorb new status: {}".format(self.gorb_status))
+        self.etcd.write(cfg.etcd_gorb_status_path, self.gorb_status)
 
-    def _read_used_lbs_on_etcd(self):
+    def _read_gorb_status_from_etcd(self):
         try:
-            self.former_used_lbs = eval(self.etcd.read_single(cfg.etcd_gorb_lbs_path).value)
+            self.gorb_former_status = eval(self.etcd.read_single(cfg.etcd_gorb_status_path).value)
         except AttributeError:
-            self.former_used_lbs = []
-        log.info("gorb former used lbs: {}".format(self.former_used_lbs))
+            self.gorb_former_status = {}
+        log.info("gorb former status: {}".format(self.gorb_former_status))
 
     def _add_port_to_used_ports(self, port):
         bisect.insort(self.used_ports, port)
-
-    def _add_lb_to_used_lbs(self, lb):
-        bisect.insort(self.used_lbs, lb)
 
     def _setup_gorb_mapping(self, hostname, gorb):
         lb_mapping = {}
@@ -119,26 +116,37 @@ class CrisidevClusterLB(object):
             if proto == "udp":
                 self.udp[hostname].append((backend_port, port))
             lb_name = "{}-{}".format(hostname, port)
-            self._add_lb_to_used_lbs(lb_name)
-            self.gorb[lb_name] = {
+            self.gorb_status[lb_name] = {
                 "lb": lb_mapping,
                 "backends": backend_mapping
             }
 
+    def _update_gorb_to_remove(self):
+        for lb_name, value in sorted(self.gorb_former_status.iteritems()):
+            if not lb_name in self.gorb_status.keys():
+                self.gorb_to_remove[lb_name] = []
+            else:
+                for backend in value['backends']:
+                    if not backend in self.gorb_status[lb_name]['backends']:
+                        if not self.gorb_to_remove.get(lb_name):
+                            self.gorb_to_remove[lb_name] = ["{}-{}".format(backend.get('host'), backend.get('port'))]
+                        else:
+                            self.gorb_to_remove[lb_name].append("{}-{}".format(backend.get('host'), backend.get('port')))
+        log.info("lbs to remove from gorb: {}".format(pformat(self.gorb_to_remove)))
+
     def _cleanup_gorb(self):
-        lbs_to_cleanup = set(self.former_used_lbs).difference(self.used_lbs)
-        log.info("lbs to cleanup: {}".format(list(lbs_to_cleanup)))
-        for lb in lbs_to_cleanup:
-            log.info("removing outdated service {}".format(lb))
-            response = self._delete(lb)
-            if response == 404:
-                log.error("lb {} removal failed. readded to used_lbs. please check".format(lb))
-                self._add_lb_to_used_lbs(lb)
-        self._write_used_lbs_on_etcd()
+        self._update_gorb_to_remove()
+        for lb_name, value in sorted(self.gorb_to_remove.iteritems()):
+            if value == []:
+                self._delete(lb_name)
+            else:
+                for backend in value:
+                    backend_name = "{}/{}".format(lb_name, backend)
+                    self._delete(backend_name)
 
     def _update_gorb(self):
         self._cleanup_gorb()
-        for lb_name, value in sorted(self.gorb.iteritems()):
+        for lb_name, value in sorted(self.gorb_status.iteritems()):
             status_code, response = self._get(lb_name)
             if status_code == 404:
                 log.info("creating lb {}, method".format(lb_name, value['lb']['method']))
@@ -147,11 +155,9 @@ class CrisidevClusterLB(object):
                     response['options']['protocol'] != value["lb"]['protocol'] or response['options']['persistent'] != value["lb"]['persistent'] or \
                     response['options']['method'] != value["lb"]['method']:
                 log.info("updating lb {}".format(lb_name))
-                self._delete(lb_name)
-                time.sleep(1)
-                self._put(lb_name, value["lb"])
+                self._patch(lb_name, value["lb"])
             for backend in value["backends"]:
-                backend_name = "{}/{}-{}".format(lb_name, backend.get("host"), value["lb"]['port'])
+                backend_name = "{}/{}-{}".format(lb_name, backend.get("host"), backend.get('port'))
                 status_code, response = self._get(backend_name)
                 if status_code == 404:
                     log.info("creating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
@@ -164,30 +170,36 @@ class CrisidevClusterLB(object):
                         print response['options']['port'], backend['port']
                         print response['options']['method'], backend['method']
                     log.info("updating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
-                    self._delete(backend_name)
-                    time.sleep(1)
-                    self._put(backend_name, backend)
+                    self._patch(backend_name, backend)
+        self._write_gorb_status_on_etcd()
 
     def _get(self, service):
-        r = requests.get("{}/{}".format(cfg.gorb_endpoint, service), headers=self.header)
+        url = "{}/{}".format(cfg.gorb_endpoint, service)
+        r = requests.get(url, headers=self.header)
         if not r.status_code in (200, 404):
-            log.error("requests get error: {} ".format(r.status_code))
+            log.error("requests get error url {}: {} ".format(url, r.status_code))
         return r.status_code, r.json()
 
     def _delete(self, service):
-        r = requests.delete("{}/{}".format(cfg.gorb_endpoint, service), headers=self.header)
-        if not r.status_code in (200, 404):
-            log.error("requests delete: {} ".format(r.status_code))
+        url = "{}/{}".format(cfg.gorb_endpoint, service)
+        r = requests.delete(url, headers=self.header)
+        if not r.status_code == 200:
+            log.error("requests delete url {}: {} ".format(url, r.status_code))
         return r.status_code
 
     def _put(self, service, content):
-        r = requests.put("{}/{}".format(cfg.gorb_endpoint, service), data=json.dumps(content), headers=self.header)
+        url = "{}/{}".format(cfg.gorb_endpoint, service)
+        r = requests.put(url, data=json.dumps(content), headers=self.header)
         if r.status_code != 200:
-            log.error("requests put error: {} ".format(r.status_code) + pformat(content))
+            log.error("requests put error url {}: {} ".format(url, r.status_code) + pformat(content))
         return r.status_code
 
     def _patch(self, service, content):
-        r = requests.patch("{}/{}".format(cfg.gorb_endpoint, service), data=json.dumps(content), headers=self.header)
+        url = "{}/{}".format(cfg.gorb_endpoint, service)
+        r = requests.patch(url, data=json.dumps(content), headers=self.header)
+        if r.status_code != 200:
+            log.error("requests patch error url {}: {} ".format(url, r.status_code) + pformat(content))
+        return r.status_code
 
     def _write_firewall(self):
         tmp = tempfile.mktemp()
@@ -215,10 +227,11 @@ class CrisidevClusterLB(object):
 
     def _restart_gorb(self):
         log.info("cleanup requested. cleaning up etcd and restarting gorb")
-        runcmd("etcdctl rm {}".format(cfg.etcd_gorb_lbs_path))
-        r, o, e = runcmd("systemctl restart {}".format(cfg.gorb_unifile))
+        runcmd("etcdctl rm {}".format(cfg.etcd_gorb_status_path))
+        r, o, e = runcmd("systemctl restart {}".format(cfg.gorb_unit_file))
         if r:
             raise CrisidevException("firewall test failed, skipping reload")
+        time.sleep(5)
 
 
     def do(self):

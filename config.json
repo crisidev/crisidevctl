@@ -14,17 +14,17 @@
     "nginx_template": "/etc/crisidev/nginx-{}.conf.tmpl",
     "firewall_file_safe": "/etc/crisidev/firewall.safe",
     "etcd_dir_crisidev": "/crisidev",
-    "etcd_gorb_lbs_path": "/gorb/lbs",
+    "etcd_discovery": "https://discovery.etcd.io/new",
+    "gorb_endpoint": "http://192.168.0.1:4672/service",
+    "gorb_unit_file": "gorb.crisidev.org.service",
+    "etcd_gorb_status_path": "/gorb/status",
+    "gorb_default_lb_vip": "",
+    "gorb_default_lb_persistent": true,
+    "gorb_default_lb_method": "wlc",
+    "gorb_default_backend_method": "nat",
     "nat_reserved_ports": {
         "22/tcp": "1022/tcp",
         "80/tcp": "80/tcp",
         "443/tcp": "443/tcp"
-    },
-    "etcd_discovery": "https://discovery.etcd.io/new",
-    "gorb_endpoint": "http://192.168.0.1:4672/service",
-    "gorb_unit_file": "gorb.crisidev.org.service",
-    "gorb_default_lb_vip": "",
-    "gorb_default_lb_persistent": true,
-    "gorb_default_lb_method": "wlc",
-    "gorb_default_backend_method": "nat"
+    }
 }
