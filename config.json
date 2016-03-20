@@ -16,7 +16,7 @@
     "etcd_dir_crisidev": "/crisidev/services",
     "etcd_dir_prometheus": "/crisidev/prometheus",
     "etcd_discovery": "https://discovery.etcd.io/new",
-    "prometheus_targets_file": "/tmp/prom.yml",
+    "prometheus_targets_file": "/crisidev-share/prometheus/etc/targets/etcdsd.yml",
     "gorb_endpoint": "http://192.168.0.1:4672/service",
     "gorb_unit_file": "gorb.crisidev.org.service",
     "etcd_gorb_status_path": "/crisidev/gorb/status",
