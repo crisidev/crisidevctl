@@ -12,8 +12,8 @@ server {
     client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
     chunked_transfer_encoding on;
 
-    access_log /var/log/nginx/{{ key }}-ssl-access.log;
-    error_log /var/log/nginx/{{ key }}-ssl-error.log;
+#    access_log /var/log/nginx/{{ key }}-ssl-access.log;
+#    error_log /var/log/nginx/{{ key }}-ssl-error.log;
 
     location / {
 {% if value['htaccess'] == "true" %}
