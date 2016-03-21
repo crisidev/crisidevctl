@@ -51,7 +51,7 @@ server {
         proxy_set_header Host $http_host;
     }
 {% if key == "hub.crisidev.org" %}
-    add_header Docker-Distribution-API-Version registry/2.0 always;
+    add_header "Docker-Distribution-API-Version registry/2.0" always;
     location /v2/ {
         # Do not allow connections from docker 1.5 and earlier
         # docker pre-1.6.0 did not properly set the user agent on ping, catch "Go *" user agents
