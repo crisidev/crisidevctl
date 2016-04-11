@@ -35,7 +35,7 @@ server {
         proxy_redirect off;
 {% endif %}
         resolver etcd.crisidev.org;
-{% if key == "znc.crisidev.org" %}
+{% if key == "znc.crisidev.org" or key == "git.crisidev.org" %}
         set $backend_upstream "https://{{ key }}:{{ port }}";
 {% else %}
         set $backend_upstream "http://{{ key }}:{{ port }}";
