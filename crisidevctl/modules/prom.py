@@ -3,10 +3,8 @@ import logging
 
 from pprint import pformat
 
-from ..shell import runcmd
 from ..config import cfg
 from ..etcdclient import CrisidevEtcd
-from ..exceptions import CrisidevException
 
 log = logging.getLogger(__name__)
 
@@ -53,4 +51,3 @@ class CrisidevClusterProm(object):
     def do(self):
         self._prepare_services_dict()
         self._update_prometheus_targets()
-

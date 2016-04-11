@@ -4,22 +4,17 @@ import stat
 import json
 import logging
 import tempfile
-import collections
 import bisect
-import sys
-
 import requests
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-
 from dns import resolver
 from jinja2 import Template
 from pprint import pformat
-
 from ..shell import runcmd
 from ..config import cfg
 from ..etcdclient import CrisidevEtcd
 from ..exceptions import CrisidevException
 
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)
 
 
@@ -56,8 +51,8 @@ class CrisidevClusterLB(object):
             except IndexError:
                 break
         # log.info("gorb mapping: " + pformat(self.gorb_status))
-        #log.info("iptables tcp mapping: {}".format(self.tcp))
-        #log.info("iptables udp mapping: {}".format(self.udp))
+        # log.info("iptables tcp mapping: {}".format(self.tcp))
+        # log.info("iptables udp mapping: {}".format(self.udp))
         self._read_gorb_status_from_etcd()
 
     def _write_gorb_status_on_etcd(self):
@@ -92,19 +87,28 @@ class CrisidevClusterLB(object):
                 port += 1
                 lb_port = "{}/{}".format(port, proto)
             self._add_port_to_used_ports(lb_port)
+            if gorb.get("persistent") == "false":
+                persistent = False
+            elif gorb.get("persistent") == "true":
+                persistent = True
+            else:
+                persistent = cfg.gorb_default_lb_persistent
             lb_mapping = {
                 "host": gorb.get('lb_vip') or cfg.gorb_default_lb_vip,
                 "port": port,
                 "protocol": proto,
                 "method": gorb.get('lb_method') or cfg.gorb_default_lb_method,
-                "persistent": gorb.get('persistent') or cfg.gorb_default_lb_persistent,
+                "persistent": persistent,
             }
-            for ip in resolver.query(hostname, 'A'):
+            backends = resolver.query(hostname, 'A')
+            weight = int(100 / len(backends))
+            for ip in backends:
                 backend_port, backend_proto = gorb.get('backend_ports')[count].split('/')
                 mapping = {
                     "host": ip.address,
                     "port": int(backend_port),
                     "method": gorb.get('backend_method') or cfg.gorb_default_backend_method,
+                    "weight": weight,
                 }
                 if proto == "udp":
                     mapping['pulse'] = {
@@ -123,15 +127,16 @@ class CrisidevClusterLB(object):
 
     def _update_gorb_to_remove(self):
         for lb_name, value in sorted(self.gorb_former_status.iteritems()):
-            if not lb_name in self.gorb_status.keys():
+            if lb_name not in self.gorb_status.keys():
                 self.gorb_to_remove[lb_name] = []
             else:
                 for backend in value['backends']:
-                    if not backend in self.gorb_status[lb_name]['backends']:
+                    if backend not in self.gorb_status[lb_name]['backends']:
                         if not self.gorb_to_remove.get(lb_name):
                             self.gorb_to_remove[lb_name] = ["{}-{}".format(backend.get('host'), backend.get('port'))]
                         else:
-                            self.gorb_to_remove[lb_name].append("{}-{}".format(backend.get('host'), backend.get('port')))
+                            self.gorb_to_remove[lb_name].append("{}-{}".format(backend.get('host'),
+                                                                               backend.get('port')))
         log.info("lbs to remove from gorb: {}".format(pformat(self.gorb_to_remove)))
 
     def _cleanup_gorb(self):
@@ -151,27 +156,40 @@ class CrisidevClusterLB(object):
             if status_code == 404:
                 log.info("creating lb {}, method".format(lb_name, value['lb']['method']))
                 self._put(lb_name, value["lb"])
-            elif response['options']['host'] != value["lb"]['host'] or response['options']['port'] != value["lb"]['port'] or \
-                    response['options']['protocol'] != value["lb"]['protocol'] or response['options']['persistent'] != value["lb"]['persistent'] or \
+            elif response['options']['host'] != value["lb"]['host'] or \
+                    response['options']['port'] != value["lb"]['port'] or \
+                    response['options']['protocol'] != value["lb"]['protocol'] or \
+                    response['options']['persistent'] != value["lb"]['persistent'] or \
                     response['options']['method'] != value["lb"]['method']:
                 log.info("updating lb {}".format(lb_name))
-                self._patch(lb_name, value["lb"])
+                self._delete(lb_name)
+                time.sleep(1)
+                self._put(lb_name, value["lb"])
             for backend in value["backends"]:
                 backend_name = "{}/{}-{}".format(lb_name, backend.get("host"), backend.get('port'))
                 status_code, response = self._get(backend_name)
                 if status_code == 404:
-                    log.info("creating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
+                    log.info("creating backend {} for {}, method {}".format(backend['host'], lb_name,
+                                                                            backend['method']))
                     self._put(backend_name, backend)
-                elif response['options']['host'] != backend['host'] or response['options']['port'] != backend['port'] or \
+                elif response['options']['host'] != backend['host'] or \
+                        response['options']['port'] != backend['port'] or \
                         response['options']['method'] != backend['method']:
-                    log.info("updating backend {} for {}, method {}".format(backend['host'], lb_name, backend['method']))
+                    log.info("updating backend {} for {}, method {}".format(backend['host'], lb_name,
+                                                                            backend['method']))
+                    self._delete(backend_name, backend)
+                    time.sleep(1)
+                    self._patch(backend_name, backend)
+                elif response['options']['weight'] != backend['weight']:
+                    log.info("updating backend {} for {}, weight {}".format(backend['host'], lb_name,
+                                                                            backend['weight']))
                     self._patch(backend_name, backend)
         self._write_gorb_status_on_etcd()
 
     def _get(self, service):
         url = "{}/{}".format(cfg.gorb_endpoint, service)
         r = requests.get(url, headers=self.header)
-        if not r.status_code in (200, 404):
+        if r.status_code not in (200, 404):
             log.error("requests get error url {}: {} ".format(url, r.status_code))
         return r.status_code, r.json()
 
@@ -227,7 +245,6 @@ class CrisidevClusterLB(object):
         if r:
             raise CrisidevException("firewall test failed, skipping reload")
         time.sleep(5)
-
 
     def do(self):
         if self.cleanup:
