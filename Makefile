@@ -12,6 +12,7 @@ copy-files:
 	cat ./files/crisidev/nginx-https.conf.tmpl |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/crisidev/nginx-https.conf.tmpl
 	cat ./config.json |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/crisidev/config.json
 	cp ./bin/coreos-install /usr/local/bin
+	cp ./bin/update-letsencrypt /usr/local/bin
 	echo "REMEMBER TO CHECK /etc/$(CLUSTER)/config.json"
 	cat ./files/crisidev/secure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/secure
 	cat ./files/crisidev/unsecure |sed 's/DOMAIN/$(DOMAIN)/g' |sed 's/CLUSTER/$(CLUSTER)/g' |tee /etc/nginx/sites-enabled/unsecure

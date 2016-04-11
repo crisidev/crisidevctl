@@ -1,0 +1,3 @@
+#!/bin/bash
+. /etc/crisidev/letsencrypt
+/crisidev-share/software/letsencrypt/letsencrypt-auto certonly --server https://acme-v01.api.letsencrypt.org/directory -a webroot --webroot-path=${DIR}/webroot --agree-tos --email bigo@crisidev.org --renew-by-default --non-interactive ${DOMAINS}
